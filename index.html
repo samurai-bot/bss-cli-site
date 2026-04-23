@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BSS-CLI — a TMF-aligned, LLM-native BSS that runs from a terminal</title>
+  <meta name="description" content="BSS-CLI is a complete, lightweight, TMF-aligned Business Support System for a small mobile MVNO. CLI-first, LLM-native, Apache-2.0." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="page">
+
+    <!-- ─────────────────────────────────────────────── Header ─── -->
+    <header class="site-header">
+<pre class="banner" aria-hidden="true">
+██████╗ ███████╗███████╗       ██████╗██╗     ██╗
+██╔══██╗██╔════╝██╔════╝      ██╔════╝██║     ██║
+██████╔╝███████╗███████╗█████╗██║     ██║     ██║
+██╔══██╗╚════██║╚════██║╚════╝██║     ██║     ██║
+██████╔╝███████║███████║      ╚██████╗███████╗██║
+╚═════╝ ╚══════╝╚══════╝       ╚═════╝╚══════╝╚═╝</pre>
+      <div class="title-row">
+        <h1 class="project-name">
+          <span class="prompt-sigil" aria-hidden="true">$</span>
+          bss-cli<span class="cursor" aria-hidden="true"></span>
+        </h1>
+        <span class="version-pill" aria-label="current version">v0.6.0</span>
+      </div>
+      <p class="tagline">A complete, lightweight, TMF-aligned, LLM-native BSS that runs from a terminal.</p>
+      <p class="repo-url">
+        <a href="https://github.com/samurai-bot/bss-cli">https://github.com/samurai-bot/bss-cli</a>
+      </p>
+      <nav class="header-nav" aria-label="primary">
+        <a class="ghost-button" href="https://github.com/samurai-bot/bss-cli/tree/main/docs">Docs</a>
+      </nav>
+    </header>
+
+    <hr class="rule" />
+
+    <!-- ───────────────────────────────────────── What this is ─── -->
+    <section aria-labelledby="what-heading">
+      <h2 id="what-heading">What this is</h2>
+      <p>
+        BSS-CLI is a Business Support System for a small mobile prepaid MVNO, built to run entirely from a terminal.
+        It covers the real work of running a subscriber base &mdash; CRM with case and ticket management, product
+        catalog, commercial and service order management, a provisioning simulator, eSIM profile management,
+        subscription and bundle balance, mediation, rating, and payment &mdash; with nine small services behind
+        real TMF Open API surfaces.
+      </p>
+      <p>
+        It is opinionated. Bundled prepaid only, card-on-file mandatory, block-on-exhaust enforced at the policy
+        layer. Every write travels through that policy layer so domain invariants hold even when an agent is
+        driving. The payloads on the wire match the spec &mdash; camelCase, conformant, pointable at a real TMF
+        client &mdash; not naming theater over a bespoke schema.
+      </p>
+      <p>
+        It is also deliberately small. The full stack cold-starts in 23 seconds, runs in under 4&nbsp;GB of RAM,
+        and costs about <code>$0.008</code> per agent dev session. That is the measurable version of "lightweight."
+      </p>
+
+      <p>BSS-CLI exists as three things at once:</p>
+      <ol class="plain-list">
+        <li>A <strong>reference implementation</strong> for engineers learning telco BSS/OSS.</li>
+        <li>A <strong>deployable MVP</strong> for a small MVNO &mdash; one <code>make up</code> and you are running.</li>
+        <li>A <strong>substrate for agentic experiments</strong> &mdash; a realistic telco backend an LLM can drive end-to-end, behind a policy layer that will not let it corrupt state.</li>
+      </ol>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ─────────────────────────────────────── Interactive REPL ─── -->
+    <section aria-labelledby="repl-heading">
+      <h2 id="repl-heading">The interactive REPL</h2>
+
+      <figure class="feature-figure">
+        <img src="assets/terminal_repl.jpg" alt="The v0.6 BSS-CLI REPL: a conversational prompt driving typed tools, with results rendered as boxed ASCII cards inline instead of raw JSON dumps." />
+        <figcaption>
+          The v0.6 REPL with renderer dispatch &mdash; the agent calls typed tools, results render as ASCII cards inline, no JSON dumps.
+        </figcaption>
+      </figure>
+
+      <p>
+        This is what "LLM-native" actually feels like in practice. The agent is not a separate surface grafted
+        on top of the system &mdash; it goes through the same HTTP endpoints, the same typed tool signatures, the
+        same write-through policy layer, and the same audit trail a human CLI user does. The only difference is
+        the front door: a conversation instead of a verb. When the agent tries to do something illegal, the
+        policy layer hands back a structured <code>PolicyViolation</code> with a <code>rule</code> code and
+        machine-readable <code>context</code>, and the agent self-corrects from that.
+      </p>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ──────────────────────────────────── Seven principles ─── -->
+    <section aria-labelledby="principles-heading">
+      <h2 id="principles-heading">The seven principles</h2>
+      <p>
+        These are the soul of the project. They live in a <code>CLAUDE.md</code> at the repo root that reads
+        like a contract, and they are enforced &mdash; there is a <code>make doctrine-check</code> target that
+        fails the build if anyone calls <code>datetime.now()</code> in business logic instead of the injected
+        <code>clock</code>. Rules only matter if something refuses to merge when you break them.
+      </p>
+
+      <ol class="principles">
+        <li>
+          <span class="principle-num">1</span>
+          <div>
+            <strong>Bundled-prepaid only.</strong>
+            Pay upfront; a bundle either has quota or it does not. No proration, no dunning, no collections,
+            no credit-risk modelling to reason about.
+          </div>
+        </li>
+        <li>
+          <span class="principle-num">2</span>
+          <div>
+            <strong>Card-on-file is mandatory.</strong>
+            Every customer has a payment method before activation. A failed charge means no service &mdash;
+            no exceptions, no grace period.
+          </div>
+        </li>
+        <li>
+          <span class="principle-num">3</span>
+          <div>
+            <strong>Block-on-exhaust.</strong>
+            Service stops the same instant a bundle hits zero. Only two paths back: the scheduled renewal on
+            the period boundary, or an explicit VAS top-up the customer initiates.
+          </div>
+        </li>
+        <li>
+          <span class="principle-num">4</span>
+          <div>
+            <strong>CLI-first, LLM-native.</strong>
+            Every capability is a typed tool the agent can call. ASCII art is the visualization language
+            &mdash; the terminal is the product surface, not a compromise.
+          </div>
+        </li>
+        <li>
+          <span class="principle-num">5</span>
+          <div>
+            <strong>TMF-compliant where it counts.</strong>
+            Real TMF620, 621, 622, 629, 635, 638, 640, 641, 676, 678, and 683 payloads. CamelCase on the wire,
+            conformant to the spec. You can point a real TMF client at it.
+          </div>
+        </li>
+        <li>
+          <span class="principle-num">6</span>
+          <div>
+            <strong>Lightweight is measurable.</strong>
+            Full stack under 4&nbsp;GB RAM, cold start in 23 seconds, p99 internal API under 50&nbsp;ms. Numbers
+            on the tin, verified in CI.
+          </div>
+        </li>
+        <li>
+          <span class="principle-num">7</span>
+          <div>
+            <strong>Write through policy, read freely.</strong>
+            Every write goes through a policy layer that enforces domain invariants. The LLM cannot corrupt
+            state even when asked to. That is the whole point.
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ────────────────────────────────────────── Architecture ─── -->
+    <section aria-labelledby="arch-heading">
+      <h2 id="arch-heading">Architecture</h2>
+      <p>
+        Nine service containers plus two portals, on a single PostgreSQL&nbsp;16 with schema-per-domain (a clean
+        future-split seam), RabbitMQ for async events on a topic exchange <code>bss.events</code>, and Jaeger for
+        traces. Sync HTTP goes through a typed <code>bss-clients</code> layer. Every meaningful state change writes
+        to <code>audit.domain_event</code> in the same DB transaction as the domain write &mdash; outbox-lite,
+        durable. Tracing is OpenTelemetry SDK plus auto-instrumentors; the <code>bss trace</code> CLI command
+        renders an ASCII swimlane straight from Jaeger so you never have to leave the terminal.
+      </p>
+
+<pre class="ascii-block" aria-label="BSS-CLI high-level architecture diagram">
+┌────────────────────────┐    ┌────────────────────────────┐
+│  CLI (bss …)           │    │  Portals (HTMX + Jinja)    │
+│  Typer + Rich +        │    │  - Self-Serve (9001)       │
+│  ASCII renderers       │    │  - CSR        (9002)       │
+└──────────┬─────────────┘    └──────────────┬─────────────┘
+           │                                 │
+           └──────────────┬──────────────────┘
+                          ▼
+               ┌──────────────────────┐
+               │  bss-orchestrator    │  LangGraph ReAct agent
+               │  73 typed tools      │  OpenRouter → MiMo v2 Flash
+               └──────────┬───────────┘
+                          │ HTTP (typed bss-clients, X-BSS-API-Token)
+        ┌─────────────────┼──────────────────────────────────┐
+        ▼                 ▼                                  ▼
+┌───────────┐    ┌──────────────┐                  ┌──────────────────┐
+│ catalog   │    │ crm          │                  │ subscription     │
+│ payment   │    │ com / som    │      …  +  …     │ mediation/rating │
+│ inventory │    │ provisioning │                  │ (9 services)     │
+└───────────┘    └──────────────┘                  └──────────────────┘
+        │                 │                                  │
+        └────────┬────────┴────────────────┬─────────────────┘
+                 ▼                         ▼
+        ┌──────────────────┐      ┌──────────────────┐
+        │  PostgreSQL 16   │      │  RabbitMQ        │
+        │  schema-per-svc  │◀─────│  bss.events      │
+        │  audit.domain_*  │      │  topic exchange  │
+        └──────────────────┘      └──────────────────┘
+                 │
+                 ▼
+        ┌──────────────────┐
+        │  Jaeger (OTLP)   │
+        └──────────────────┘
+</pre>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ────────────────────────────── Trace end-to-end ─── -->
+    <section aria-labelledby="trace-heading">
+      <h2 id="trace-heading">Trace anything end-to-end</h2>
+
+      <div class="pair">
+        <figure class="feature-figure">
+          <img src="assets/bss_trace_swimlane_v0_2.png" alt="The bss trace CLI command rendering a product-order trace as an ASCII swimlane in a dark terminal: one top-level POST spanning 766ms with child spans across eight services." />
+          <figcaption><code>bss trace for-order ORD-…</code> — the swimlane, rendered in the terminal.</figcaption>
+        </figure>
+        <figure class="feature-figure">
+          <img src="assets/jaegar_ui.jpg" alt="The same distributed trace open in the Jaeger UI, showing the span tree, service colours, and timing bars." />
+          <figcaption>The same trace in Jaeger &mdash; one click away when you want to drill in.</figcaption>
+        </figure>
+      </div>
+
+      <p class="pair-caption">
+        Same trace, two surfaces &mdash; <code>bss trace</code> for the terminal, Jaeger UI for when you want to
+        drill down.
+      </p>
+
+      <p>
+        OpenTelemetry is the source of truth. The ASCII view is a terminal-native lens on the same spans, not a
+        parallel tracing system; no second pipeline to maintain, nothing to drift. If something is happening in
+        the real traces, it is happening in the swimlane &mdash; and if you need timing breakdowns, span tags, or
+        log correlation, Jaeger is right there.
+      </p>
+
+<pre class="ascii-block" aria-label="Example output of the bss trace command">
+trace 4825e0bb25ae0870  766ms  125 spans  8 services  0 errors
+
+POST /tmf-api/productOrderingManagement/v4/productOrder              [com         ]  ████████████████████████  766ms
+  └─ POST /tmf-api/customerManagement/v4/customer/CUST-022           [crm         ]    ██                        18ms
+  └─ POST /tmf-api/paymentMethod/v1/charge                           [payment     ]      ████                    34ms
+  └─ POST /tmf-api/serviceOrderingManagement/v4/serviceOrder         [som         ]        ████████████████      512ms
+        └─ INSERT INTO service_inventory.cfs                         [postgres    ]          ▌                    2ms
+        └─ POST /tmf-api/resourceInventoryManagement/v4/resource     [inventory   ]          ███                  31ms
+        └─ POST /provisioning/task                                   [provisioning]              ████████████     381ms
+              └─ AMQP publish bss.events provisioning.task.completed [rabbitmq    ]                          ▌    3ms
+        └─ POST /tmf-api/subscription/v1/activate                    [subscription]                          ███  47ms
+  └─ AMQP publish bss.events order.completed                         [rabbitmq    ]                            ▌  3ms
+</pre>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ─────────────────────────────────────── The portals ─── -->
+    <section aria-labelledby="portals-heading">
+      <h2 id="portals-heading">The portals</h2>
+      <p class="callout">
+        <strong>Demo only.</strong> These portals exist to <em>exercise</em> the BSS &mdash; to show the same
+        typed tools, policy layer, and audit trail driving a browser surface. They are not a product. No
+        hardening, no i18n, no accessibility audit, no design system; they are built to make the backend
+        visible, nothing more.
+      </p>
+      <p>
+        Two small server-rendered portals sit next to the CLI: a self-serve signup flow and a CSR workbench.
+        Both are HTMX plus Jinja, no SPA framework, vendored <code>htmx.min.js</code>, which keeps the
+        dependency surface tiny and lets the agent log stream into the page over SSE without fighting a
+        client-side router.
+      </p>
+
+      <figure class="portal-figure">
+        <img src="assets/portal_self_serve_signup_v0_4.png" alt="Self-serve signup page mid-flow, with a live agent log panel streaming progress messages via server-sent events while the order is placed." />
+        <figcaption>Self-serve signup, agent log streaming via SSE.</figcaption>
+      </figure>
+
+      <figure class="portal-figure">
+        <img src="assets/portal_self_serve_confirmation_v0_4.png" alt="Self-serve confirmation page rendered after activation, showing the new subscription summary and an eSIM activation QR code." />
+        <figcaption>Confirmation with eSIM activation QR.</figcaption>
+      </figure>
+
+      <figure class="portal-figure">
+        <img src="assets/portal_csr_360_v0_5.png" alt="CSR portal customer 360 view: a single page with the customer's profile, subscriptions, bundle balances, recent orders, payments, and open cases." />
+        <figcaption>CSR customer 360 &mdash; read-only, single page.</figcaption>
+      </figure>
+
+      <figure class="portal-figure">
+        <img src="assets/portal_csr_agent_midstream_v0_5.png" alt="CSR portal with the in-page agent answering a free-text question about why the customer's data is not working, tokens streaming mid-reply." />
+        <figcaption>CSR asks the agent mid-stream: "why is their data not working?"</figcaption>
+      </figure>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ────────────────────────────── What's shipped ─── -->
+    <section aria-labelledby="numbers-heading">
+      <h2 id="numbers-heading">What's shipped</h2>
+      <dl class="numbers">
+        <div><dt>Services</dt><dd>9 + 2 portals</dd></div>
+        <div><dt>Typed LLM tools</dt><dd>73</dd></div>
+        <div><dt>Tests passing</dt><dd>819</dd></div>
+        <div><dt>Hero scenarios</dt><dd>6 end-to-end</dd></div>
+        <div><dt>Cold start</dt><dd>23&nbsp;seconds</dd></div>
+        <div><dt>Runtime RAM</dt><dd>&lt; 4&nbsp;GB</dd></div>
+        <div><dt>Image footprint</dt><dd>~1.1&nbsp;GB BYOI · ~2.65&nbsp;GB bundled</dd></div>
+        <div><dt>Agent dev session</dt><dd>~$0.008 (MiMo v2 Flash)</dd></div>
+        <div><dt>Architecture decisions</dt><dd>~50 numbered DECISIONS.md entries</dd></div>
+      </dl>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ──────────────────────────────────────── Tech stack ─── -->
+    <section aria-labelledby="stack-heading">
+      <h2 id="stack-heading">Tech stack</h2>
+      <p class="tag-list">
+        <span class="tag">Python 3.12</span>
+        <span class="tag">FastAPI</span>
+        <span class="tag">SQLAlchemy 2.0 + asyncpg</span>
+        <span class="tag">Alembic</span>
+        <span class="tag">Pydantic v2</span>
+        <span class="tag">transitions</span>
+        <span class="tag">aio-pika</span>
+        <span class="tag">Typer + Rich</span>
+        <span class="tag">LangGraph</span>
+        <span class="tag">OpenRouter · MiMo v2 Flash</span>
+        <span class="tag">PostgreSQL 16</span>
+        <span class="tag">RabbitMQ</span>
+        <span class="tag">OpenTelemetry</span>
+        <span class="tag">Jaeger</span>
+        <span class="tag">HTMX + Jinja</span>
+        <span class="tag">uv workspace</span>
+        <span class="tag">Apache-2.0</span>
+      </p>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ───────────────────────────────────────── Versions ─── -->
+    <section aria-labelledby="versions-heading">
+      <h2 id="versions-heading">Versions</h2>
+      <ol class="timeline">
+        <li>
+          <span class="ver">v0.1</span>
+          <span>Nine services, full TMF surface, write-through-policy, hero scenarios.</span>
+        </li>
+        <li>
+          <span class="ver">v0.2</span>
+          <span>OpenTelemetry + Jaeger + <code>bss trace</code> ASCII swimlane.</span>
+        </li>
+        <li>
+          <span class="ver">v0.3</span>
+          <span><code>BSS_API_TOKEN</code> middleware &mdash; the smallest possible auth story, behind the <code>auth_context.py</code> seam that has been in every service since day one.</span>
+        </li>
+        <li>
+          <span class="ver">v0.4</span>
+          <span>Self-serve portal (HTMX + SSE agent log).</span>
+        </li>
+        <li>
+          <span class="ver">v0.5</span>
+          <span>CSR portal (customer 360 + ask-the-agent), case threading, scenario engine extensions.</span>
+        </li>
+        <li>
+          <span class="ver">v0.6</span>
+          <span>Docs sweep, REPL renderer dispatch (rendered ASCII cards in the interactive REPL), tech-debt sweep, snapshot test framework.</span>
+        </li>
+      </ol>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ───────────────────────────────────────── Footer ─── -->
+    <footer class="site-footer">
+      <p>
+        <a href="https://github.com/samurai-bot/bss-cli">github.com/samurai-bot/bss-cli</a>
+        &nbsp;·&nbsp; Apache-2.0
+        &nbsp;·&nbsp; v0.6.0
+        &nbsp;·&nbsp; April 2026
+      </p>
+      <p class="footer-note">Built with care.</p>
+    </footer>
+
+  </main>
+</body>
+</html>

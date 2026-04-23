@@ -1,0 +1,485 @@
+/* ─────────────────────────────────────────────────────────────
+   BSS-CLI — portfolio site stylesheet
+   Single column, long-form, dark by default. Quiet and technical.
+   ───────────────────────────────────────────────────────────── */
+
+/* ── Tokens ─────────────────────────────────────────────────── */
+:root {
+  --bg:         #0e1014;
+  --surface:    #161a20;
+  --border:     #262b33;
+  --text:       #d8d8d4;
+  --muted:      #8a8d93;
+  --accent:     #7ee787;  /* phosphor green */
+  --accent-2:   #f0883e;  /* used sparingly */
+  --link-hover: #a8f0af;
+
+  --font-body: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --content-w:  880px;
+  --radius:     6px;
+}
+
+/* ── Reset-ish ──────────────────────────────────────────────── */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+/* ── Page frame ─────────────────────────────────────────────── */
+.page {
+  max-width: var(--content-w);
+  margin: 0 auto;
+  padding: 72px 28px 96px;
+  counter-reset: section;        /* for numbered h2 headings */
+  animation: fade-in-page 520ms ease-out both;
+}
+
+@keyframes fade-in-page {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 560px) {
+  .page { padding: 48px 20px 64px; }
+}
+
+/* ── Headings ───────────────────────────────────────────────── */
+h1, h2, h3 {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  letter-spacing: 0;
+  line-height: 1.3;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 1.35rem;
+  margin: 0 0 24px;
+}
+
+/* Numbered section prefix: 01, 02, 03 … rendered in quiet orange */
+section { counter-increment: section; }
+section > h2::before {
+  content: counter(section, decimal-leading-zero);
+  color: var(--accent-2);
+  opacity: 0.7;
+  margin-right: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+h3 {
+  font-size: 1rem;
+  margin: 32px 0 8px;
+  color: var(--text);
+}
+
+/* ── Links ──────────────────────────────────────────────────── */
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(126, 231, 135, 0.25);
+  transition: color 120ms ease, border-color 120ms ease;
+}
+a:hover,
+a:focus-visible {
+  color: var(--link-hover);
+  border-bottom-color: var(--link-hover);
+}
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+/* ── Inline code ────────────────────────────────────────────── */
+code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--text);
+}
+
+/* ── Rules between sections ─────────────────────────────────── */
+.rule {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: 56px 0;
+}
+
+/* ── Section spacing ────────────────────────────────────────── */
+section p { margin: 0 0 16px; }
+section p:last-child { margin-bottom: 0; }
+
+/* ── Header ─────────────────────────────────────────────────── */
+.site-header { margin-bottom: 8px; }
+
+/* ASCII block-letter banner (decorative, aria-hidden) */
+.banner {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-size: clamp(0.46rem, 1.55vw, 0.78rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin: 0 0 28px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  white-space: pre;
+  overflow-x: auto;
+  text-shadow: 0 0 12px rgba(126, 231, 135, 0.32);
+}
+
+.title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.project-name {
+  font-family: var(--font-mono);
+  color: var(--text);
+  font-size: 1.6rem;
+  margin: 0;
+  letter-spacing: -0.01em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.prompt-sigil {
+  color: var(--accent);
+  opacity: 0.8;
+  font-weight: 500;
+}
+
+/* Blinking terminal cursor after the project name */
+.cursor {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  margin-left: 4px;
+  background: var(--accent);
+  vertical-align: -0.12em;
+  box-shadow: 0 0 10px rgba(126, 231, 135, 0.55);
+  animation: cursor-blink 1.1s steps(2) infinite;
+}
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+.version-pill {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 3px 9px;
+  border: 1px solid var(--accent-2);
+  color: var(--accent-2);
+  border-radius: 999px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.tagline {
+  color: var(--muted);
+  font-size: 1.05rem;
+  margin: 14px 0 16px;
+  max-width: 60ch;
+}
+
+.repo-url {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  margin: 0 0 22px;
+  word-break: break-all;
+}
+.repo-url a {
+  color: var(--accent);
+  border-bottom: 1px solid rgba(126, 231, 135, 0.4);
+  padding-bottom: 1px;
+}
+.repo-url a::before {
+  content: '→ ';
+  color: var(--muted);
+  margin-right: 2px;
+}
+
+.header-nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ghost-button {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-bottom: 1px solid var(--border); /* neutralise link underline */
+  background: transparent;
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+.ghost-button:hover,
+.ghost-button:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(126, 231, 135, 0.04);
+}
+
+/* ── Plain ordered list (the "three things at once") ────────── */
+.plain-list {
+  margin: 12px 0 0;
+  padding-left: 1.4em;
+}
+.plain-list li { margin: 6px 0; }
+
+/* ── The seven principles ───────────────────────────────────── */
+.principles {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 0;
+  counter-reset: principle;
+  display: grid;
+  gap: 18px;
+}
+.principles li {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.principle-num {
+  font-family: var(--font-mono);
+  color: var(--accent-2);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: right;
+  padding-top: 1px;
+}
+.principles strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.principles li > div { max-width: 62ch; }
+
+@media (max-width: 560px) {
+  .principles li { grid-template-columns: 28px 1fr; gap: 12px; }
+  .principle-num { font-size: 1.1rem; }
+}
+
+/* ── ASCII / code blocks ────────────────────────────────────── */
+.ascii-block {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  color: var(--text);
+  margin: 20px 0 0;
+  overflow-x: auto;      /* wide diagrams scroll, never wrap */
+  white-space: pre;      /* preserve ASCII art exactly */
+  tab-size: 4;
+}
+
+/* ── Callout (e.g. "demo only" note on portals) ─────────────── */
+.callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent-2);
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 0.96rem;
+}
+.callout strong { color: var(--accent-2); }
+
+/* ── Figures (images) ───────────────────────────────────────── */
+.feature-figure,
+.portal-figure {
+  margin: 0 0 24px;
+}
+
+.feature-figure img,
+.portal-figure img {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: 100%;
+}
+
+.feature-figure {
+  margin: 8px 0 32px;
+}
+
+figcaption {
+  font-family: var(--font-body);
+  font-style: italic;
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-top: 10px;
+  line-height: 1.5;
+}
+
+/* Side-by-side feature pair (trace + Jaeger) ─ stacks on narrow */
+.pair {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: 1fr 1fr;
+  margin: 8px 0 4px;
+}
+.pair .feature-figure { margin: 0; }
+
+@media (max-width: 720px) {
+  .pair { grid-template-columns: 1fr; }
+}
+
+.pair-caption {
+  color: var(--muted);
+  font-size: 0.95rem;
+  margin: 8px 0 20px !important;
+}
+
+/* ── What's shipped (numbers) ───────────────────────────────── */
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 32px;
+  margin: 0;
+}
+.numbers > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+}
+.numbers > div { padding: 16px 0; }
+.numbers dt {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-transform: lowercase;
+  letter-spacing: 0.02em;
+}
+.numbers dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 1.55rem;
+  font-weight: 500;
+  line-height: 1.25;
+  color: var(--accent);
+  text-shadow: 0 0 14px rgba(126, 231, 135, 0.18);
+}
+
+@media (max-width: 560px) {
+  .numbers { grid-template-columns: 1fr; gap: 0; }
+}
+
+/* ── Tech stack tags ────────────────────────────────────────── */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+.tag {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  padding: 4px 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  line-height: 1.4;
+  white-space: nowrap;
+  transition: border-color 160ms ease, color 160ms ease, transform 160ms ease;
+}
+.tag:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* Principle hover — nudge the number into the green */
+.principles li .principle-num { transition: color 160ms ease, text-shadow 160ms ease; }
+.principles li:hover .principle-num {
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(126, 231, 135, 0.45);
+}
+
+/* ── Versions timeline ──────────────────────────────────────── */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+}
+.timeline li {
+  display: grid;
+  grid-template-columns: 70px 1fr;
+  gap: 18px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  align-items: baseline;
+}
+.timeline li:last-child { border-bottom: 1px solid var(--border); }
+.timeline .ver {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 560px) {
+  .timeline li { grid-template-columns: 56px 1fr; gap: 12px; }
+}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.site-footer {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  text-align: left;
+}
+.site-footer p { margin: 4px 0; }
+.site-footer a { color: var(--muted); border-bottom-color: rgba(138, 141, 147, 0.3); }
+.site-footer a:hover,
+.site-footer a:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.footer-note { opacity: 0.75; }
+
+/* ── Selection ──────────────────────────────────────────────── */
+::selection {
+  background: rgba(126, 231, 135, 0.25);
+  color: var(--text);
+}
+
+/* ── Respect reduced motion preferences ─────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .page   { animation: none; }
+  .cursor { animation: none; }
+  .tag,
+  .principles li .principle-num { transition: none; }
+}
