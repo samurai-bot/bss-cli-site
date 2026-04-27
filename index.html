@@ -29,7 +29,7 @@
           <span class="prompt-sigil" aria-hidden="true">$</span>
           bss-cli<span class="cursor" aria-hidden="true"></span>
         </h1>
-        <span class="version-pill" aria-label="current version">v0.6.0</span>
+        <span class="version-pill" aria-label="current version">v0.12.0</span>
       </div>
       <p class="tagline">A complete, lightweight, TMF-aligned, LLM-native BSS that runs from a terminal.</p>
       <p class="repo-url">
@@ -191,7 +191,7 @@
                           ▼
                ┌──────────────────────┐
                │  bss-orchestrator    │  LangGraph ReAct agent
-               │  73 typed tools      │  OpenRouter → MiMo v2 Flash
+               │  95 typed tools      │  OpenRouter → google/gemma-4-26b-a4b-it
                └──────────┬───────────┘
                           │ HTTP (typed bss-clients, X-BSS-API-Token)
         ┌─────────────────┼──────────────────────────────────┐
@@ -268,26 +268,39 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
     <section aria-labelledby="portals-heading">
       <h2 id="portals-heading">The portals</h2>
       <p class="callout">
-        <strong>Demo only.</strong> These portals exist to <em>exercise</em> the BSS &mdash; to show the same
-        typed tools, policy layer, and audit trail driving a browser surface. They are not a product. No
-        hardening, no i18n, no accessibility audit, no design system; they are built to make the backend
-        visible, nothing more.
+        <strong>Demo-grade chrome, production-shape platform.</strong> No design system, no i18n, no
+        accessibility audit &mdash; the portals are built to make the backend visible, not to win a UX
+        award. The platform underneath is the real story: a magic-link login wall (v0.8), a named-token
+        perimeter that flows <code>service_identity</code> into every audit row (v0.9), direct-API
+        post-login self-serve with step-up auth on every sensitive write (v0.10), and a chat surface
+        scoped to the logged-in customer with a hard ownership trip-wire (v0.12).
       </p>
       <p>
-        Two small server-rendered portals sit next to the CLI: a self-serve signup flow and a CSR workbench.
-        Both are HTMX plus Jinja, no SPA framework, vendored <code>htmx.min.js</code>, which keeps the
-        dependency surface tiny and lets the agent log stream into the page over SSE without fighting a
-        client-side router.
+        Two small server-rendered portals sit next to the CLI: a self-serve customer portal and a CSR
+        workbench. Both are HTMX plus Jinja, no SPA framework, vendored <code>htmx.min.js</code>, which
+        keeps the dependency surface tiny and lets the chat widget stream tool calls into the page over
+        SSE without fighting a client-side router.
+      </p>
+      <p>
+        Since v0.11, the signup funnel writes directly through <code>bss-clients</code> from the route
+        handlers &mdash; one route, one BSS write, no orchestrator hop. Wall time dropped from about 85
+        seconds to under five. The chat widget is the only orchestrator-mediated surface that remains,
+        and v0.12 narrowed its reach (see the next section).
       </p>
 
       <figure class="portal-figure">
-        <img src="assets/portal_self_serve_signup_v0_4.png" alt="Self-serve signup page mid-flow, with a live agent log panel streaming progress messages via server-sent events while the order is placed." />
-        <figcaption>Self-serve signup, agent log streaming via SSE.</figcaption>
+        <img src="assets/portal_self_serve_signup_v0_12.png" alt="Self-serve signup form: minimal fields — name, phone, payment card — on a clean single page, with the verified-email identity carrying the rest of the customer record." />
+        <figcaption>Self-serve signup &mdash; direct-write since v0.11. Minimal form (name + phone + card) because the verified-email identity already carries the rest.</figcaption>
       </figure>
 
       <figure class="portal-figure">
-        <img src="assets/portal_self_serve_confirmation_v0_4.png" alt="Self-serve confirmation page rendered after activation, showing the new subscription summary and an eSIM activation QR code." />
-        <figcaption>Confirmation with eSIM activation QR.</figcaption>
+        <img src="assets/portal_self_serve_confirmation_v0_12.png" alt="Self-serve confirmation page rendered after activation, showing the new subscription summary, eSIM activation QR code, and LPA code for manual entry." />
+        <figcaption>Confirmation with eSIM activation QR + LPA code.</figcaption>
+      </figure>
+
+      <figure class="portal-figure">
+        <img src="assets/portal_self_serve_chat_widget_v0_12.png" alt="The v0.12 chat widget mid-conversation: a popup pinned to the bottom-right of the dashboard, multi-turn history, markdown-rendered replies, auto-scrolling on new tokens." />
+        <figcaption>v0.12 chat widget mid-conversation &mdash; pops up on every post-login page; multi-turn memory within a session; markdown rendering; auto-scroll on stream.</figcaption>
       </figure>
 
       <figure class="portal-figure">
@@ -303,19 +316,108 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
 
     <hr class="rule" />
 
+    <!-- ─────────────────────────────────── The chat surface ─── -->
+    <section aria-labelledby="chat-heading">
+      <h2 id="chat-heading">The chat surface (v0.12)</h2>
+      <p>
+        The chat widget is one modality of access, not a privileged path. It calls the same typed tools
+        through the same policy layer as the CLI &mdash; just through a tighter prompt-visible window.
+        The architectural point is the chokepoint: the LLM cannot reach a tool the customer's direct UI
+        doesn't already expose. If the chat ever has a capability the dashboard doesn't, that's a
+        doctrine bug, not a feature.
+      </p>
+      <p>
+        The window is a tool profile, <code>customer_self_serve</code> &mdash; sixteen curated tools:
+        eight read wrappers (<code>subscription.list_mine</code>, <code>get_balance_mine</code>,
+        <code>usage.history_mine</code>, etc.), four write wrappers (<code>vas.purchase_for_me</code>,
+        <code>schedule_plan_change_mine</code>, <code>cancel_pending_plan_change_mine</code>,
+        <code>terminate_mine</code>), three public catalog reads, and one escalation tool
+        (<code>case.open_for_me</code>). No <code>*.mine</code> tool accepts a <code>customer_id</code>
+        parameter; the actor is bound from <code>auth_context.current()</code> and a startup self-check
+        refuses to boot if any signature drifts.
+      </p>
+
+<pre class="ascii-block" aria-label="Three-layer defence around the chat surface">
+  customer chat  ──▶  ┌─────────────────────────────────────────┐
+                      │  Layer 1 — server-side policies         │
+                      │  (the primary boundary, unchanged)      │
+                      ├─────────────────────────────────────────┤
+                      │  Layer 2 — *.mine wrapper pre-check     │
+                      │  customer_id bound from auth_context;   │
+                      │  cross-customer ids refused at the seam │
+                      ├─────────────────────────────────────────┤
+                      │  Layer 3 — output ownership trip-wire   │
+                      │  every emitted tool result scanned for  │
+                      │  cross-customer fields; mismatch → P0   │
+                      └─────────────────────────────────────────┘
+                                      │
+                              generic safety reply
+                              on trip — no leaked tool name
+</pre>
+
+      <p>
+        Caps bound the blast radius of a runaway customer (or a runaway prompt). Twenty requests per
+        hour and two dollars per month by default, configurable via <code>BSS_CHAT_*_PER_*</code>
+        environment variables, accounted from OpenRouter usage metadata into an
+        <code>audit.chat_usage</code> row per customer per period. Cap checks fail closed: a database
+        error means the chat refuses to call <code>astream_once</code>, not the other way round.
+      </p>
+
+      <p>
+        Five categories the chat is not allowed to resolve on its own &mdash;
+        <code>fraud</code>, <code>billing_dispute</code>, <code>regulator_complaint</code>,
+        <code>identity_recovery</code>, <code>bereavement</code>. The system prompt names them with
+        examples; when the agent recognises one, it calls <code>case.open_for_me</code>, which writes
+        a CRM case linked to a SHA-256 hash of the conversation. The transcript itself lives in
+        <code>audit.chat_transcript</code>, addressed by hash, append-only. A CSR opens
+        <code>/case/{id}</code> in the v0.5 console and reads the conversation in the new "Chat
+        transcript" panel.
+      </p>
+
+      <p>
+        Pre-signup browse mode is the same widget with a different system prompt. Any verified-email
+        visitor without a customer record yet sees the chat on <code>/welcome</code> and
+        <code>/plans</code>; the <code>*.mine</code> wrappers refuse cleanly because there is no actor
+        to bind. The visitor can ask <em>"what plans do you have?"</em> and get an answer from the
+        public catalog reads without being forced through signup first.
+      </p>
+    </section>
+
+    <hr class="rule" />
+
+    <!-- ─────────────────────────────────── 14-day soak ─── -->
+    <section aria-labelledby="soak-heading">
+      <h2 id="soak-heading">The 14-day soak</h2>
+      <p>
+        v0.12 ships with a soak runner (<code>scenarios/soak/run_soak.py</code>) that drives 30
+        synthetic customers through 14 simulated days under a frozen accelerated clock &mdash; chat
+        queries, dashboard hits, escalation triggers, and deliberate cross-customer probes. It is an
+        internal-beta soak under accelerated time, not real user traffic; the report
+        (<code>soak/report-v0.12.md</code>) is what the v0.12 release tagged on.
+      </p>
+      <dl class="numbers">
+        <div><dt>Ownership-check trips</dt><dd>0 / target 0</dd></div>
+        <div><dt>Cross-customer leaks</dt><dd>0 / target 0</dd></div>
+        <div><dt>Chat-usage drift</dt><dd>0.0% / tolerance 5%</dd></div>
+        <div><dt>p99 chat latency</dt><dd>8.35&nbsp;s · alarm tier (fail at 15&nbsp;s)</dd></div>
+      </dl>
+    </section>
+
+    <hr class="rule" />
+
     <!-- ────────────────────────────── What's shipped ─── -->
     <section aria-labelledby="numbers-heading">
       <h2 id="numbers-heading">What's shipped</h2>
       <dl class="numbers">
         <div><dt>Services</dt><dd>9 + 2 portals</dd></div>
-        <div><dt>Typed LLM tools</dt><dd>73</dd></div>
-        <div><dt>Tests passing</dt><dd>819</dd></div>
-        <div><dt>Hero scenarios</dt><dd>6 end-to-end</dd></div>
-        <div><dt>Cold start</dt><dd>23&nbsp;seconds</dd></div>
+        <div><dt>Typed LLM tools</dt><dd>95</dd></div>
+        <div><dt>Tests passing</dt><dd>~1,129</dd></div>
+        <div><dt>Hero scenarios</dt><dd>12 end-to-end</dd></div>
+        <div><dt>Cold start</dt><dd>~25&nbsp;seconds</dd></div>
         <div><dt>Runtime RAM</dt><dd>&lt; 4&nbsp;GB</dd></div>
         <div><dt>Image footprint</dt><dd>~1.1&nbsp;GB BYOI · ~2.65&nbsp;GB bundled</dd></div>
-        <div><dt>Agent dev session</dt><dd>~$0.008 (MiMo v2 Flash)</dd></div>
-        <div><dt>Architecture decisions</dt><dd>~50 numbered DECISIONS.md entries</dd></div>
+        <div><dt>Agent dev session</dt><dd>~$0.005 (Gemma 4 26B A4B)</dd></div>
+        <div><dt>Architecture decisions</dt><dd>~64 numbered DECISIONS.md entries</dd></div>
       </dl>
     </section>
 
@@ -334,7 +436,8 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
         <span class="tag">aio-pika</span>
         <span class="tag">Typer + Rich</span>
         <span class="tag">LangGraph</span>
-        <span class="tag">OpenRouter · MiMo v2 Flash</span>
+        <span class="tag">OpenRouter · Gemma 4 26B A4B</span>
+        <span class="tag">bss-portal-auth (v0.8+)</span>
         <span class="tag">PostgreSQL 16</span>
         <span class="tag">RabbitMQ</span>
         <span class="tag">OpenTelemetry</span>
@@ -375,6 +478,30 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
           <span class="ver">v0.6</span>
           <span>Docs sweep, REPL renderer dispatch (rendered ASCII cards in the interactive REPL), tech-debt sweep, snapshot test framework.</span>
         </li>
+        <li>
+          <span class="ver">v0.7</span>
+          <span>Catalog versioning + plan-change snapshot doctrine. No proration; price snapshotted at order time so renewal locks in the price even when the catalog re-prices. Operator-initiated <code>migrate_to_new_price</code> with regulatory notice.</span>
+        </li>
+        <li>
+          <span class="ver">v0.8</span>
+          <span>Self-serve portal login wall &mdash; email + magic-link OTP + step-up auth for sensitive writes. New <code>portal_auth</code> schema; tokens HMAC-SHA-256 with a server pepper; <code>PortalSessionMiddleware</code> binds <code>request.state.customer_id</code> from the verified session.</span>
+        </li>
+        <li>
+          <span class="ver">v0.9</span>
+          <span>Named-token perimeter. Each external surface gets its own <code>BSS_*_API_TOKEN</code>; <code>service_identity</code> flows into <code>audit.domain_event</code> so audit answers "which surface initiated this write?" not just "which actor".</span>
+        </li>
+        <li>
+          <span class="ver">v0.10</span>
+          <span>Post-login self-serve goes direct &mdash; top-up, plan-change scheduler, COF management, eSIM redownload, line cancel, contact updates, billing history. One route, one <code>bss-clients</code> write, no orchestrator hop. Step-up auth gates every sensitive label.</span>
+        </li>
+        <li>
+          <span class="ver">v0.11</span>
+          <span>Signup funnel migrates to direct API; the v0.4 LLM-mediated signup demo retires. Each step is one direct write from a route handler. Wall time: ~85s &rarr; &lt;5s. Chat is the only orchestrator-mediated route that remains.</span>
+        </li>
+        <li>
+          <span class="ver">v0.12</span>
+          <span>Chat scoping + escalation + 14-day soak. <code>customer_self_serve</code> tool profile, output ownership trip-wire, per-customer rate + cost caps, five non-negotiable escalation categories, popup chat widget on every post-login page, pre-signup browse mode. v1.0 is what swaps Singpass + Stripe + SM-DP+.</span>
+        </li>
       </ol>
     </section>
 
@@ -385,7 +512,7 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
       <p>
         <a href="https://github.com/samurai-bot/bss-cli">github.com/samurai-bot/bss-cli</a>
         &nbsp;·&nbsp; Apache-2.0
-        &nbsp;·&nbsp; v0.6.0
+        &nbsp;·&nbsp; v0.12.0
         &nbsp;·&nbsp; April 2026
       </p>
       <p class="footer-note">Built with care.</p>
