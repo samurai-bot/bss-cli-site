@@ -59,7 +59,7 @@
         client &mdash; not naming theater over a bespoke schema.
       </p>
       <p>
-        It is also deliberately small. The full stack cold-starts in 23 seconds, runs in under 4&nbsp;GB of RAM,
+        It is also deliberately small. The full stack cold-starts in 25 seconds, runs in under 4&nbsp;GB of RAM,
         and costs about <code>$0.008</code> per agent dev session. That is the measurable version of "lightweight."
       </p>
 
@@ -151,7 +151,7 @@
           <span class="principle-num">6</span>
           <div>
             <strong>Lightweight is measurable.</strong>
-            Full stack under 4&nbsp;GB RAM, cold start in 23 seconds, p99 internal API under 50&nbsp;ms. Numbers
+            Full stack under 4&nbsp;GB RAM, cold start in 25 seconds, p99 internal API under 50&nbsp;ms. Numbers
             on the tin, verified in CI.
           </div>
         </li>
@@ -172,48 +172,97 @@
     <section aria-labelledby="arch-heading">
       <h2 id="arch-heading">Architecture</h2>
       <p>
-        Nine service containers plus two portals, on a single PostgreSQL&nbsp;16 with schema-per-domain (a clean
-        future-split seam), RabbitMQ for async events on a topic exchange <code>bss.events</code>, and Jaeger for
-        traces. Sync HTTP goes through a typed <code>bss-clients</code> layer. Every meaningful state change writes
-        to <code>audit.domain_event</code> in the same DB transaction as the domain write &mdash; outbox-lite,
-        durable. Tracing is OpenTelemetry SDK plus auto-instrumentors; the <code>bss trace</code> CLI command
-        renders an ASCII swimlane straight from Jaeger so you never have to leave the terminal.
+        Three callers reach nine services through one of two paths. The <strong>CLI</strong> (terminal,
+        REPL, scenario runner) and the <strong>self-serve customer portal</strong> &mdash; the latter
+        production-shape as of v0.12 &mdash; go direct via <code>bss-clients</code> for everything
+        deterministic: every read, every signup step (since v0.11), every post-login self-serve write.
+        The <strong>CSR console</strong> on port 9002 is still a work in progress &mdash; the v0.5
+        customer-360 + ask-the-agent surface ships, but the operator workbench has not yet seen the
+        login wall, RBAC, or step-up auth that landed on the customer side. Flows that need LLM
+        judgment go through the orchestrator: the CSR <em>ask</em> agent surface, and the chat route
+        on the self-serve portal (with the v0.12 <code>customer_self_serve</code> profile).
+      </p>
+      <p>
+        Inside, two planes connect the services: <strong>synchronous HTTP</strong> over the typed
+        <code>bss-clients</code> layer (TMF APIs, <code>X-BSS-API-Token</code>) for calls that need an
+        immediate answer, and <strong>asynchronous events</strong> over a RabbitMQ topic exchange
+        <code>bss.events</code> for reactions. Every service writes directly to its own schema in one
+        shared PostgreSQL&nbsp;16; <code>audit.domain_event</code> is written in the same transaction
+        as the domain write, with the RabbitMQ publish happening after commit (simplified outbox).
+        Every service exports OpenTelemetry spans to Jaeger; <code>bss trace</code> renders the same
+        spans as an ASCII swimlane in the terminal.
       </p>
 
-<pre class="ascii-block" aria-label="BSS-CLI high-level architecture diagram">
-┌────────────────────────┐    ┌────────────────────────────┐
-│  CLI (bss …)           │    │  Portals (HTMX + Jinja)    │
-│  Typer + Rich +        │    │  - Self-Serve (9001)       │
-│  ASCII renderers       │    │  - CSR        (9002)       │
-└──────────┬─────────────┘    └──────────────┬─────────────┘
-           │                                 │
-           └──────────────┬──────────────────┘
-                          ▼
-               ┌──────────────────────┐
-               │  bss-orchestrator    │  LangGraph ReAct agent
-               │  95 typed tools      │  OpenRouter → google/gemma-4-26b-a4b-it
-               └──────────┬───────────┘
-                          │ HTTP (typed bss-clients, X-BSS-API-Token)
-        ┌─────────────────┼──────────────────────────────────┐
-        ▼                 ▼                                  ▼
-┌───────────┐    ┌──────────────┐                  ┌──────────────────┐
-│ catalog   │    │ crm          │                  │ subscription     │
-│ payment   │    │ com / som    │      …  +  …     │ mediation/rating │
-│ inventory │    │ provisioning │                  │ (9 services)     │
-└───────────┘    └──────────────┘                  └──────────────────┘
-        │                 │                                  │
-        └────────┬────────┴────────────────┬─────────────────┘
-                 ▼                         ▼
-        ┌──────────────────┐      ┌──────────────────┐
-        │  PostgreSQL 16   │      │  RabbitMQ        │
-        │  schema-per-svc  │◀─────│  bss.events      │
-        │  audit.domain_*  │      │  topic exchange  │
-        └──────────────────┘      └──────────────────┘
-                 │
-                 ▼
-        ┌──────────────────┐
-        │  Jaeger (OTLP)   │
-        └──────────────────┘
+<pre class="ascii-block" aria-label="BSS-CLI high-level architecture diagram (v0.12)">
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────────┐
+│ Self-serve UI    │  │ CSR console UI   │  │  bss (CLI + REPL)        │
+│ port 9001 (v0.4) │  │ port 9002 (v0.5) │  │  + LangGraph orchestrator│
+│   ✓ ready        │  │   ⚠ WIP          │  │                          │
+└────────┬─────────┘  └─────────┬────────┘  └────────────┬─────────────┘
+         │                      │                        │
+┌────────┴────────┐   ┌─────────┴────────┐               │
+│ direct          │   │ ask agent surface│               │
+│  bss-clients    │   │  agent_bridge.*  │               │
+│ (signup, post-  │   │  → astream_once  │               │
+│  login, reads)  │   └─────────┬────────┘               │
+│ chat → astream  │             │                        │
+│ (customer_self_ │             │                        │
+│  serve profile, │             │                        │
+│  v0.12)         │             │                        │
+└────────┬────────┘             │                        │
+         │                      ▼                        ▼
+         │      ┌──────────────────────────────────────────────────┐
+         │      │  bss_orchestrator.session.astream_once(channel,  │
+         │      │   actor=…) · ReAct over 95-tool registry · pin   │
+         │      │   allow_destructive=False                        │
+         │      └──────────────────────────┬───────────────────────┘
+         │                                 │
+         └────────────────────►────────────┴──────────────────────►
+                                  │ HTTP (TMF APIs) + bss-clients
+   ┌──────┬────────┬──────────────┼───────┬────────┐
+   ▼      ▼        ▼              ▼       ▼
+┌─────┐┌─────┐ ┌─────┐         ┌─────┐┌─────┐
+│CRM* ││Pay  │ │Cat  │         │COM  ││Subs │
+│8002 ││8003 │ │8001 │         │8004 ││8006 │
+└──┬──┘└──┬──┘ └──┬──┘         └──┬──┘└──┬──┘
+   │      │       │               │      │
+   │      └─ HTTP (e.g. Pay→CRM "customer exists?")
+   │                              │
+   │      ┌───────────────────────┼──────────────────┐
+   │      │       ┌─────┐ ┌─────┐ ┌─────┐ ┌──────┐
+   │      │       │SOM  │ │Med  │ │Rate │ │Prov  │
+   │      │       │8005 │ │8007 │ │8008 │ │ Sim  │
+   │      │       └──┬──┘ └──┬──┘ └──┬──┘ │ 8010 │
+   │      │          │       │       │   └──┬───┘
+   ▼      ▼          ▼       ▼       ▼      ▼
+═══════════════════════════════════════════════════════════
+║         RabbitMQ — topic exchange: bss.events            ║
+║  order.* · service_order.* · service.* · provisioning.*  ║
+║  subscription.* · usage.* · crm.* · payment.*            ║
+═══════════════════════════════════════════════════════════
+
+Each service writes directly to its own schema in ONE shared
+Postgres instance. audit.domain_event is written in the same
+transaction as the domain write; RabbitMQ publish happens
+after commit (simplified outbox). Every service exports OTel
+spans to Jaeger (v0.2+).
+
+┌────────────────────────────────────────────────┐  ┌──────────────┐
+│        PostgreSQL 16 (single instance)         │  │   Jaeger     │
+│                                                │  │  (v0.2+)     │
+│  crm · catalog · inventory · payment ·         │  │  OTLP/HTTP   │
+│  order_mgmt · service_inventory · provisioning │  │  → traces UI │
+│  subscription · mediation · billing · audit ·  │  └──────────────┘
+│  knowledge                                     │
+└──────────────────────┬─────────────────────────┘
+                       │ read-only
+                       ▼
+                ┌──────────────┐
+                │   Metabase   │
+                └──────────────┘
+
+* CRM hosts the Inventory sub-domain (MSISDN + eSIM pools) on port 8002
+  under /inventory-api/v1/...; not a separate container in v0.x.
 </pre>
     </section>
 
@@ -413,7 +462,7 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
         <div><dt>Typed LLM tools</dt><dd>95</dd></div>
         <div><dt>Tests passing</dt><dd>~1,129</dd></div>
         <div><dt>Hero scenarios</dt><dd>12 end-to-end</dd></div>
-        <div><dt>Cold start</dt><dd>~25&nbsp;seconds</dd></div>
+        <div><dt>Cold start</dt><dd>25&nbsp;seconds</dd></div>
         <div><dt>Runtime RAM</dt><dd>&lt; 4&nbsp;GB</dd></div>
         <div><dt>Image footprint</dt><dd>~1.1&nbsp;GB BYOI · ~2.65&nbsp;GB bundled</dd></div>
         <div><dt>Agent dev session</dt><dd>~$0.005 (Gemma 4 26B A4B)</dd></div>
