@@ -455,52 +455,52 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
       <h2 id="versions-heading">Versions</h2>
       <ol class="timeline">
         <li>
-          <span class="ver">v0.1</span>
-          <span>Nine services, full TMF surface, write-through-policy, hero scenarios.</span>
-        </li>
-        <li>
-          <span class="ver">v0.2</span>
-          <span>OpenTelemetry + Jaeger + <code>bss trace</code> ASCII swimlane.</span>
-        </li>
-        <li>
-          <span class="ver">v0.3</span>
-          <span><code>BSS_API_TOKEN</code> middleware &mdash; the smallest possible auth story, behind the <code>auth_context.py</code> seam that has been in every service since day one.</span>
-        </li>
-        <li>
-          <span class="ver">v0.4</span>
-          <span>Self-serve portal (HTMX + SSE agent log).</span>
-        </li>
-        <li>
-          <span class="ver">v0.5</span>
-          <span>CSR portal (customer 360 + ask-the-agent), case threading, scenario engine extensions.</span>
-        </li>
-        <li>
-          <span class="ver">v0.6</span>
-          <span>Docs sweep, REPL renderer dispatch (rendered ASCII cards in the interactive REPL), tech-debt sweep, snapshot test framework.</span>
-        </li>
-        <li>
-          <span class="ver">v0.7</span>
-          <span>Catalog versioning + plan-change snapshot doctrine. No proration; price snapshotted at order time so renewal locks in the price even when the catalog re-prices. Operator-initiated <code>migrate_to_new_price</code> with regulatory notice.</span>
-        </li>
-        <li>
-          <span class="ver">v0.8</span>
-          <span>Self-serve portal login wall &mdash; email + magic-link OTP + step-up auth for sensitive writes. New <code>portal_auth</code> schema; tokens HMAC-SHA-256 with a server pepper; <code>PortalSessionMiddleware</code> binds <code>request.state.customer_id</code> from the verified session.</span>
-        </li>
-        <li>
-          <span class="ver">v0.9</span>
-          <span>Named-token perimeter. Each external surface gets its own <code>BSS_*_API_TOKEN</code>; <code>service_identity</code> flows into <code>audit.domain_event</code> so audit answers "which surface initiated this write?" not just "which actor".</span>
-        </li>
-        <li>
-          <span class="ver">v0.10</span>
-          <span>Post-login self-serve goes direct &mdash; top-up, plan-change scheduler, COF management, eSIM redownload, line cancel, contact updates, billing history. One route, one <code>bss-clients</code> write, no orchestrator hop. Step-up auth gates every sensitive label.</span>
+          <span class="ver">v0.12</span>
+          <span>Chat scoping + escalation + 14-day soak. <code>customer_self_serve</code> tool profile, output ownership trip-wire, per-customer rate + cost caps, five non-negotiable escalation categories, popup chat widget on every post-login page, pre-signup browse mode. v1.0 is what swaps Singpass + Stripe + SM-DP+.</span>
         </li>
         <li>
           <span class="ver">v0.11</span>
           <span>Signup funnel migrates to direct API; the v0.4 LLM-mediated signup demo retires. Each step is one direct write from a route handler. Wall time: ~85s &rarr; &lt;5s. Chat is the only orchestrator-mediated route that remains.</span>
         </li>
         <li>
-          <span class="ver">v0.12</span>
-          <span>Chat scoping + escalation + 14-day soak. <code>customer_self_serve</code> tool profile, output ownership trip-wire, per-customer rate + cost caps, five non-negotiable escalation categories, popup chat widget on every post-login page, pre-signup browse mode. v1.0 is what swaps Singpass + Stripe + SM-DP+.</span>
+          <span class="ver">v0.10</span>
+          <span>Post-login self-serve goes direct &mdash; top-up, plan-change scheduler, COF management, eSIM redownload, line cancel, contact updates, billing history. One route, one <code>bss-clients</code> write, no orchestrator hop. Step-up auth gates every sensitive label.</span>
+        </li>
+        <li>
+          <span class="ver">v0.9</span>
+          <span>Named-token perimeter. Each external surface gets its own <code>BSS_*_API_TOKEN</code>; <code>service_identity</code> flows into <code>audit.domain_event</code> so audit answers "which surface initiated this write?" not just "which actor".</span>
+        </li>
+        <li>
+          <span class="ver">v0.8</span>
+          <span>Self-serve portal login wall &mdash; email + magic-link OTP + step-up auth for sensitive writes. New <code>portal_auth</code> schema; tokens HMAC-SHA-256 with a server pepper; <code>PortalSessionMiddleware</code> binds <code>request.state.customer_id</code> from the verified session.</span>
+        </li>
+        <li>
+          <span class="ver">v0.7</span>
+          <span>Catalog versioning + plan-change snapshot doctrine. No proration; price snapshotted at order time so renewal locks in the price even when the catalog re-prices. Operator-initiated <code>migrate_to_new_price</code> with regulatory notice.</span>
+        </li>
+        <li>
+          <span class="ver">v0.6</span>
+          <span>Docs sweep, REPL renderer dispatch (rendered ASCII cards in the interactive REPL), tech-debt sweep, snapshot test framework.</span>
+        </li>
+        <li>
+          <span class="ver">v0.5</span>
+          <span>CSR portal (customer 360 + ask-the-agent), case threading, scenario engine extensions.</span>
+        </li>
+        <li>
+          <span class="ver">v0.4</span>
+          <span>Self-serve portal (HTMX + SSE agent log).</span>
+        </li>
+        <li>
+          <span class="ver">v0.3</span>
+          <span><code>BSS_API_TOKEN</code> middleware &mdash; the smallest possible auth story, behind the <code>auth_context.py</code> seam that has been in every service since day one.</span>
+        </li>
+        <li>
+          <span class="ver">v0.2</span>
+          <span>OpenTelemetry + Jaeger + <code>bss trace</code> ASCII swimlane.</span>
+        </li>
+        <li>
+          <span class="ver">v0.1</span>
+          <span>Nine services, full TMF surface, write-through-policy, hero scenarios.</span>
         </li>
       </ol>
     </section>
