@@ -8,7 +8,7 @@
 
   <meta property="og:type" content="article" />
   <meta property="og:title" content="BSS-CLI v0.19 — TMF-compliant, LLM-native, eSIM-first BSS, soaking toward v1.0" />
-  <meta property="og:description" content="Ten services, two portals, real Resend + Didit + Stripe integrations, automatic renewals, in-process tick worker. Deterministic where speed matters, LLM where judgment does." />
+  <meta property="og:description" content="Nine services, two portals, real Resend + Didit + Stripe integrations, automatic renewals, in-process tick worker. Deterministic where speed matters, LLM where judgment does." />
   <meta property="og:url" content="https://bss-cli.com/" />
   <meta property="og:image" content="https://bss-cli.com/og-preview.png" />
   <meta property="og:image:width" content="1200" />
@@ -60,9 +60,9 @@
       <h2 id="what-heading">What this is</h2>
       <p>
         BSS-CLI is a Business Support System for a small mobile MVNO, built to run entirely from a terminal.
-        Ten TMF-compliant service containers &mdash; Catalog, CRM (with Cases / Tickets / Port-requests),
-        Payment, COM, SOM, Subscription, Mediation, Rating, Provisioning-sim &mdash; plus two web portals
-        (self-serve customer and operator cockpit). Every operation is a tool the LLM can call; the primary
+        Nine TMF-compliant service containers &mdash; Catalog, CRM (with Cases / Tickets / Port-requests
+        and the Inventory sub-domain), Payment, COM, SOM, Subscription, Mediation, Rating,
+        Provisioning-sim &mdash; plus two web portals (self-serve customer and operator cockpit). Every operation is a tool the LLM can call; the primary
         UI is the <code>bss</code> CLI plus ASCII visualizations and a scoped chat surface in the customer
         portal.
       </p>
@@ -178,8 +178,8 @@
           <span class="principle-num">6</span>
           <div>
             <strong>Lightweight is measurable.</strong>
-            Full stack under 4&nbsp;GB RAM, cold start in 25 seconds, p99 internal API under 50&nbsp;ms. Numbers
-            on the tin, verified in CI.
+            BSS containers run in ~1.2&nbsp;GiB RAM, cold-start in ~22&nbsp;seconds, p99 internal API under 50&nbsp;ms. Numbers
+            on the tin, re-measured at every release.
           </div>
         </li>
         <li>
@@ -496,12 +496,12 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
     <section aria-labelledby="numbers-heading">
       <h2 id="numbers-heading">What's shipped</h2>
       <dl class="numbers">
-        <div><dt>Services</dt><dd>10 + 2 portals</dd></div>
+        <div><dt>Services</dt><dd>9 + 2 portals</dd></div>
         <div><dt>Hero scenarios</dt><dd>17 end-to-end (~95s wall)</dd></div>
         <div><dt>Doctrine grep guards</dt><dd>14 in <code>make doctrine-check</code></dd></div>
         <div><dt>Real-provider integrations</dt><dd>Resend · Didit · Stripe</dd></div>
-        <div><dt>Cold start</dt><dd>~25&nbsp;seconds</dd></div>
-        <div><dt>Runtime RAM</dt><dd>&lt; 4&nbsp;GB</dd></div>
+        <div><dt>Cold start</dt><dd>~22&nbsp;seconds (v0.19, BYOI)</dd></div>
+        <div><dt>Runtime RAM</dt><dd>~1.2&nbsp;GiB across 11 containers (excl. Postgres / RabbitMQ / Jaeger / LLM)</dd></div>
         <div><dt>Agent dev session</dt><dd>~$0.005 (Gemma 4 26B A4B)</dd></div>
       </dl>
     </section>
