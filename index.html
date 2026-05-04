@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BSS-CLI v0.19 — TMF-compliant, LLM-native, eSIM-first BSS</title>
+  <title>BSS-CLI v0.20 — TMF-compliant, LLM-native, eSIM-first BSS</title>
   <meta name="description" content="BSS-CLI is a complete, lightweight, TMF-compliant Business Support System for a small mobile MVNO. CLI-first, LLM-native, eSIM-only, Apache-2.0." />
 
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="BSS-CLI v0.19 — TMF-compliant, LLM-native, eSIM-first BSS, soaking toward v1.0" />
+  <meta property="og:title" content="BSS-CLI v0.20 — TMF-compliant, LLM-native, eSIM-first BSS, soaking toward v1.0" />
   <meta property="og:description" content="Nine services, two portals, real Resend + Didit + Stripe integrations, automatic renewals, in-process tick worker. Deterministic where speed matters, LLM where judgment does." />
   <meta property="og:url" content="https://bss-cli.com/" />
   <meta property="og:image" content="https://bss-cli.com/og-preview.png" />
@@ -42,7 +42,7 @@
           <span class="prompt-sigil" aria-hidden="true">$</span>
           bss-cli<span class="cursor" aria-hidden="true"></span>
         </h1>
-        <span class="version-pill" aria-label="current version">v0.19.0</span>
+        <span class="version-pill" aria-label="current version">v0.20.0</span>
       </div>
       <p class="tagline">The entire BSS, in a terminal. SID-aligned. TMF-compliant. LLM-native. eSIM-first.</p>
       <p class="repo-url">
@@ -74,11 +74,13 @@
         CDR, and OCS protocols are intentionally out of scope (channel-layer concerns).
       </p>
       <p>
-        v0.19 is the soak baseline before v1.0. All three real-provider integrations are live (Resend email,
+        v0.20 is the soak baseline before v1.0. All three real-provider integrations are live (Resend email,
         Didit KYC, Stripe Checkout). Telco hygiene gaps are closed (MNP port-in/port-out, MSISDN replenishment,
         roaming as a product). Renewals fire automatically on their period boundary via an in-process worker;
-        customers get a reminder email ~24h before. The only mocked surface left for v1.0 is SM-DP+ (real eSIM
-        provisioning is NDA-gated).
+        customers get a reminder email ~24h before. v0.20 adds an indexed-corpus knowledge tool so the cockpit
+        can answer how-to questions from the operator handbook + runbooks + doctrine with cited anchors
+        (Postgres FTS by default, optional pgvector hybrid). The only mocked surface left for v1.0 is
+        SM-DP+ (real eSIM provisioning is NDA-gated).
       </p>
 
       <p>BSS-CLI exists as three things at once:</p>
@@ -97,9 +99,9 @@
       <h2 id="repl-heading">The operator cockpit (REPL canonical)</h2>
 
       <figure class="feature-figure">
-        <img src="assets/bss_repl_v0_19.jpg" alt="The v0.19 BSS-CLI REPL: a conversational prompt driving typed tools, with results rendered as boxed ASCII cards inline. Plan listing, VAS catalogue, and a PLAN_L detail card all visible above the prompt." />
+        <img src="assets/bss_repl_v0_19.jpg" alt="The BSS-CLI REPL: a conversational prompt driving typed tools, with results rendered as boxed ASCII cards inline. Plan listing, VAS catalogue, and a PLAN_L detail card all visible above the prompt." />
         <figcaption>
-          The v0.19 REPL is the cockpit. Type natural language; the agent calls tools; results render as ASCII cards. Slash commands (<code>/ports</code>, <code>/360</code>, <code>/focus</code>, <code>/confirm</code>) cover deterministic operator flows.
+          The <code>bss</code> REPL is the cockpit. Type natural language; the agent calls tools; results render as ASCII cards. Slash commands (<code>/ports</code>, <code>/360</code>, <code>/focus</code>, <code>/confirm</code>) cover deterministic operator flows. v0.20 adds <code>knowledge.search</code> / <code>knowledge.get</code> so the cockpit can answer how-to questions from the indexed handbook + runbooks with cited anchors.
         </figcaption>
       </figure>
 
@@ -226,7 +228,7 @@
         <code>service_identity</code> (named-token perimeter, v0.9).
       </p>
 
-<pre class="ascii-block" aria-label="BSS-CLI high-level architecture diagram (v0.19)">
+<pre class="ascii-block" aria-label="BSS-CLI high-level architecture diagram (v0.20)">
 ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────────┐
 │ Self-serve UI    │  │ Operator cockpit │  │  bss (CLI + REPL)        │
 │ port 9001 (v0.4) │  │ port 9002 (v0.13)│  │  + LangGraph orchestrator│
@@ -283,13 +285,20 @@ External providers (v0.14 → v0.16):
   Didit   ─ KYC: hosted UI + signed-webhook corroboration
   Stripe  ─ Checkout + webhook reconciliation (PCI SAQ A)
 
+Cockpit knowledge tool (v0.20+):
+  knowledge.search / knowledge.get over the indexed doc corpus
+  (HANDBOOK + CLAUDE + runbooks). Tier-0 Postgres FTS by default;
+  Tier-1 pgvector hybrid behind BSS_KNOWLEDGE_BACKEND=hybrid.
+  Operator-cockpit profile only; never customer chat.
+
 ┌────────────────────────────────────────────────┐  ┌──────────────┐
-│        PostgreSQL 16 (single instance)         │  │   Jaeger     │
+│   PostgreSQL 16 + pgvector (single instance)   │  │   Jaeger     │
 │                                                │  │  (v0.2+)     │
 │  crm · catalog · inventory · payment ·         │  │  OTLP/HTTP   │
 │  order_mgmt · service_inventory · provisioning │  │  → traces UI │
 │  subscription · mediation · billing · cockpit ·│  └──────────────┘
-│  audit · integrations · portal_auth            │
+│  audit · integrations · portal_auth ·          │
+│  knowledge (v0.20+ doc-corpus RAG)             │
 └──────────────────────┬─────────────────────────┘
                        │ read-only
                        ▼
@@ -497,11 +506,12 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
       <h2 id="numbers-heading">What's shipped</h2>
       <dl class="numbers">
         <div><dt>Services</dt><dd>9 + 2 portals</dd></div>
-        <div><dt>Hero scenarios</dt><dd>17 end-to-end (~95s wall)</dd></div>
-        <div><dt>Doctrine grep guards</dt><dd>14 in <code>make doctrine-check</code></dd></div>
+        <div><dt>Hero scenarios</dt><dd>19 end-to-end (~100s wall)</dd></div>
+        <div><dt>Doctrine grep guards</dt><dd>16 in <code>make doctrine-check</code></dd></div>
         <div><dt>Real-provider integrations</dt><dd>Resend · Didit · Stripe</dd></div>
-        <div><dt>Cold start</dt><dd>~22&nbsp;seconds (v0.19, BYOI)</dd></div>
+        <div><dt>Cold start</dt><dd>~22&nbsp;seconds (v0.20, BYOI)</dd></div>
         <div><dt>Runtime RAM</dt><dd>~1.2&nbsp;GiB across 11 containers (excl. Postgres / RabbitMQ / Jaeger / LLM)</dd></div>
+        <div><dt>Doc corpus indexed</dt><dd>~370 chunks across 25 files (handbook + runbooks + doctrine)</dd></div>
         <div><dt>Agent dev session</dt><dd>~$0.005 (Gemma 4 26B A4B)</dd></div>
       </dl>
     </section>
@@ -525,7 +535,8 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
         <span class="tag">bss-portal-auth (v0.8+)</span>
         <span class="tag">bss-cockpit (v0.13+)</span>
         <span class="tag">Resend · Didit · Stripe (v0.14–v0.16)</span>
-        <span class="tag">PostgreSQL 16</span>
+        <span class="tag">bss-knowledge (v0.20+ FTS + pgvector RAG)</span>
+        <span class="tag">PostgreSQL 16 + pgvector</span>
         <span class="tag">RabbitMQ</span>
         <span class="tag">OpenTelemetry</span>
         <span class="tag">Jaeger</span>
@@ -541,6 +552,10 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
     <section aria-labelledby="versions-heading">
       <h2 id="versions-heading">Versions</h2>
       <ol class="timeline">
+        <li>
+          <span class="ver">v0.20</span>
+          <span>Cockpit knowledge tool (handbook RAG). <code>knowledge.search</code> / <code>knowledge.get</code> over an indexed doc corpus (HANDBOOK + CLAUDE + runbooks); citation guard catches un-cited handbook claims; Tier-0 Postgres FTS default, Tier-1 pgvector hybrid behind a backend toggle. New <code>knowledge</code> schema, <code>--data-roaming-mb</code> flag closes the v0.17 catalog admin gap. Postgres image moves to <code>pgvector/pgvector:pg16</code>. New single-file <code>docs/HANDBOOK.md</code> consolidates setup, env vars, providers, personas, and every runbook into one Obsidian-friendly reference (the same corpus the cockpit indexes).</span>
+        </li>
         <li>
           <span class="ver">v0.19</span>
           <span>Soak baseline before v1.0. UX polish: deterministic intent intercept on list-shaped REPL queries (kills LLM fabrication), Rich/box-drawing ASCII panels rendered as <code>&lt;pre&gt;</code> in the cockpit browser, consolidated docs sweep, README rewrite to 1.0-baseline, KYC-provider rename (<code>myinfo</code> → <code>prebaked</code>), retired stale SHIP_CRITERIA + Phase-12 framing.</span>
@@ -627,7 +642,7 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
       <p>
         <a href="https://github.com/samurai-bot/bss-cli">github.com/samurai-bot/bss-cli</a>
         &nbsp;·&nbsp; Apache-2.0
-        &nbsp;·&nbsp; v0.19.0
+        &nbsp;·&nbsp; v0.20.0
         &nbsp;·&nbsp; May 2026
       </p>
       <p class="footer-note">Built with care.</p>
