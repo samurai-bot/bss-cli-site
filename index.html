@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>BSS-CLI v0.12 — TMF-aligned, LLM-native BSS</title>
-  <meta name="description" content="BSS-CLI is a complete, lightweight, TMF-aligned Business Support System for a small mobile operator. CLI-first, LLM-native, Apache-2.0." />
+  <title>BSS-CLI v0.19 — TMF-compliant, LLM-native, eSIM-first BSS</title>
+  <meta name="description" content="BSS-CLI is a complete, lightweight, TMF-compliant Business Support System for a small mobile MVNO. CLI-first, LLM-native, eSIM-only, Apache-2.0." />
 
   <meta property="og:type" content="article" />
-  <meta property="og:title" content="BSS-CLI v0.12 — TMF-aligned, LLM-native BSS for a small mobile operator" />
-  <meta property="og:description" content="9 services, 95 typed tools, under 4GB RAM. Deterministic where speed and stability matter, LLM where judgment does. Same core, same principles, six versions sharper." />
+  <meta property="og:title" content="BSS-CLI v0.19 — TMF-compliant, LLM-native, eSIM-first BSS, soaking toward v1.0" />
+  <meta property="og:description" content="Ten services, two portals, real Resend + Didit + Stripe integrations, automatic renewals, in-process tick worker. Deterministic where speed matters, LLM where judgment does." />
   <meta property="og:url" content="https://bss-cli.com/" />
   <meta property="og:image" content="https://bss-cli.com/og-preview.png" />
   <meta property="og:image:width" content="1200" />
@@ -42,9 +42,9 @@
           <span class="prompt-sigil" aria-hidden="true">$</span>
           bss-cli<span class="cursor" aria-hidden="true"></span>
         </h1>
-        <span class="version-pill" aria-label="current version">v0.12.0</span>
+        <span class="version-pill" aria-label="current version">v0.19.0</span>
       </div>
-      <p class="tagline">A complete, lightweight, TMF-aligned, LLM-native BSS that runs from a terminal.</p>
+      <p class="tagline">The entire BSS, in a terminal. SID-aligned. TMF-compliant. LLM-native. eSIM-first.</p>
       <p class="repo-url">
         <a href="https://github.com/samurai-bot/bss-cli">https://github.com/samurai-bot/bss-cli</a>
       </p>
@@ -59,44 +59,58 @@
     <section aria-labelledby="what-heading">
       <h2 id="what-heading">What this is</h2>
       <p>
-        BSS-CLI is a Business Support System for a small mobile operator, built to run entirely from a terminal.
-        It covers the real work of running a subscriber base &mdash; CRM with case and ticket management, product
-        catalog, commercial and service order management, a provisioning simulator, eSIM profile management,
-        subscription and bundle balance, mediation, rating, and payment &mdash; with nine small services behind
-        real TMF Open API surfaces.
+        BSS-CLI is a Business Support System for a small mobile MVNO, built to run entirely from a terminal.
+        Ten TMF-compliant service containers &mdash; Catalog, CRM (with Cases / Tickets / Port-requests),
+        Payment, COM, SOM, Subscription, Mediation, Rating, Provisioning-sim &mdash; plus two web portals
+        (self-serve customer and operator cockpit). Every operation is a tool the LLM can call; the primary
+        UI is the <code>bss</code> CLI plus ASCII visualizations and a scoped chat surface in the customer
+        portal.
       </p>
       <p>
-        It is opinionated. Bundled prepaid only, card-on-file mandatory, block-on-exhaust enforced at the policy
-        layer. Every write travels through that policy layer so domain invariants hold even when an agent is
-        driving. The payloads on the wire match the spec &mdash; camelCase, conformant, pointable at a real TMF
-        client &mdash; not naming theater over a bespoke schema.
+        It is opinionated. <strong>eSIM-only, bundled-prepaid, block-on-exhaust, card-on-file mandatory.</strong>
+        Every write travels through a policy layer so domain invariants hold even when an agent is driving.
+        Payloads on the wire match the spec &mdash; camelCase, conformant, pointable at a real TMF client
+        &mdash; not naming theater over a bespoke schema. eKYC, real-customer UI, network elements, batch
+        CDR, and OCS protocols are intentionally out of scope (channel-layer concerns).
       </p>
       <p>
-        It is also deliberately small. The full stack cold-starts in 25 seconds, runs in under 4&nbsp;GB of RAM,
-        and costs about <code>$0.005</code> per agent dev session. That is the measurable version of "lightweight."
+        v0.19 is the soak baseline before v1.0. All three real-provider integrations are live (Resend email,
+        Didit KYC, Stripe Checkout). Telco hygiene gaps are closed (MNP port-in/port-out, MSISDN replenishment,
+        roaming as a product). Renewals fire automatically on their period boundary via an in-process worker;
+        customers get a reminder email ~24h before. The only mocked surface left for v1.0 is SM-DP+ (real eSIM
+        provisioning is NDA-gated).
       </p>
 
       <p>BSS-CLI exists as three things at once:</p>
       <ol class="plain-list">
         <li>A <strong>reference implementation</strong> for engineers learning telco BSS/OSS.</li>
-        <li>A <strong>deployable MVP</strong> for a small mobile operator &mdash; one <code>make up</code> and you are running.</li>
-        <li>A <strong>substrate for agentic experiments</strong> &mdash; a realistic telco backend an LLM can drive end-to-end, behind a policy layer that will not let it corrupt state.</li>
+        <li>A <strong>deployable MVP</strong> for a small MVNO &mdash; one <code>docker compose up</code> and you are running.</li>
+        <li>A <strong>substrate for agentic experiments</strong> against realistic telco operations &mdash; behind a policy layer that will not let an LLM corrupt state.</li>
       </ol>
+
     </section>
 
     <hr class="rule" />
 
     <!-- ─────────────────────────────────────── Interactive REPL ─── -->
     <section aria-labelledby="repl-heading">
-      <h2 id="repl-heading">The interactive REPL</h2>
+      <h2 id="repl-heading">The operator cockpit (REPL canonical)</h2>
 
       <figure class="feature-figure">
-        <img src="assets/terminal_repl.jpg" alt="The v0.6 BSS-CLI REPL: a conversational prompt driving typed tools, with results rendered as boxed ASCII cards inline instead of raw JSON dumps." />
+        <img src="assets/bss_repl_v0_19.jpg" alt="The v0.19 BSS-CLI REPL: a conversational prompt driving typed tools, with results rendered as boxed ASCII cards inline. Plan listing, VAS catalogue, and a PLAN_L detail card all visible above the prompt." />
         <figcaption>
-          The v0.6 REPL with renderer dispatch &mdash; the agent calls typed tools, results render as ASCII cards inline, no JSON dumps.
+          The v0.19 REPL is the cockpit. Type natural language; the agent calls tools; results render as ASCII cards. Slash commands (<code>/ports</code>, <code>/360</code>, <code>/focus</code>, <code>/confirm</code>) cover deterministic operator flows.
         </figcaption>
       </figure>
 
+      <p>
+        Since v0.13 the REPL is the <strong>canonical</strong> operator cockpit. The browser surface on
+        port 9002 is a thin veneer over the same Postgres-backed <code>Conversation</code> store &mdash;
+        exit <code>bss</code>, open the page, see the same turns. No login wall: the cockpit is
+        single-operator-by-design behind a secure perimeter, with audit attribution coming from
+        <code>.bss-cli/settings.toml</code>. Destructive actions propose first and wait for
+        <code>/confirm</code>.
+      </p>
       <p>
         This is what "LLM-native" actually feels like in practice. The agent is not a separate surface grafted
         on top of the system &mdash; it goes through the same HTTP endpoints, the same typed tool signatures, the
@@ -185,49 +199,55 @@
     <section aria-labelledby="arch-heading">
       <h2 id="arch-heading">Architecture</h2>
       <p>
-        Three callers reach nine services through one of two paths. The <strong>CLI</strong> (terminal,
-        REPL, scenario runner) and the <strong>self-serve customer portal</strong> &mdash; the latter
-        production-shape as of v0.12 &mdash; go direct via <code>bss-clients</code> for everything
-        deterministic: every read, every signup step (since v0.11), every post-login self-serve write.
-        The <strong>CSR console</strong> on port 9002 is still a work in progress &mdash; the v0.5
-        customer-360 + ask-the-agent surface ships, but the operator workbench has not yet seen the
-        login wall, RBAC, or step-up auth that landed on the customer side. Flows that need LLM
-        judgment go through the orchestrator: the CSR <em>ask</em> agent surface, and the chat route
-        on the self-serve portal (with the v0.12 <code>customer_self_serve</code> profile).
+        Every BSS write goes through the per-service policy layer. Three trigger paths feed it:
+        <strong>direct via <code>bss-clients</code></strong> &mdash; every CLI/REPL command, the
+        entire signup funnel, every post-login self-serve route, and every read; sub-second,
+        deterministic, no LLM. <strong>Orchestrator-mediated via <code>astream_once</code></strong>
+        &mdash; the customer-portal chat surface (the only orchestrator-mediated route post-v0.11),
+        wrapping a LangGraph ReAct agent over the same tool registry. <strong>In-process tick loops</strong>
+        &mdash; the v0.18 renewal worker fires automatic renewals and sends upcoming-renewal reminder
+        emails on a 60-second tick; <code>FOR UPDATE SKIP LOCKED</code> makes it multi-replica safe by
+        construction.
       </p>
       <p>
         Inside, two planes connect the services: <strong>synchronous HTTP</strong> over the typed
-        <code>bss-clients</code> layer (TMF APIs, <code>X-BSS-API-Token</code>) for calls that need an
-        immediate answer, and <strong>asynchronous events</strong> over a RabbitMQ topic exchange
-        <code>bss.events</code> for reactions. Every service writes directly to its own schema in one
-        shared PostgreSQL&nbsp;16; <code>audit.domain_event</code> is written in the same transaction
-        as the domain write, with the RabbitMQ publish happening after commit (simplified outbox).
-        Every service exports OpenTelemetry spans to Jaeger; <code>bss trace</code> renders the same
-        spans as an ASCII swimlane in the terminal.
+        <code>bss-clients</code> layer (TMF APIs, named <code>BSS_*_API_TOKEN</code>) for calls that
+        need an immediate answer, and <strong>asynchronous events</strong> over a RabbitMQ topic
+        exchange <code>bss.events</code> for reactions. Every service writes directly to its own
+        schema in one shared PostgreSQL&nbsp;16; <code>audit.domain_event</code> is written in the
+        same transaction as the domain write, with the RabbitMQ publish happening after commit
+        (simplified outbox). Every service exports OpenTelemetry spans to Jaeger;
+        <code>bss trace</code> renders the same spans as an ASCII swimlane in the terminal.
+      </p>
+      <p>
+        The audit log gets a coherent attribution on every write: <code>actor</code>,
+        <code>channel</code> (<code>portal-self-serve</code> / <code>portal-csr</code> /
+        <code>portal-chat</code> / <code>cli</code> / <code>system:renewal_worker</code>), and
+        <code>service_identity</code> (named-token perimeter, v0.9).
       </p>
 
-<pre class="ascii-block" aria-label="BSS-CLI high-level architecture diagram (v0.12)">
+<pre class="ascii-block" aria-label="BSS-CLI high-level architecture diagram (v0.19)">
 ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────────┐
-│ Self-serve UI    │  │ CSR console UI   │  │  bss (CLI + REPL)        │
-│ port 9001 (v0.4) │  │ port 9002 (v0.5) │  │  + LangGraph orchestrator│
-│   ✓ ready        │  │   ⚠ WIP          │  │                          │
+│ Self-serve UI    │  │ Operator cockpit │  │  bss (CLI + REPL)        │
+│ port 9001 (v0.4) │  │ port 9002 (v0.13)│  │  + LangGraph orchestrator│
+│   signup · chat  │  │  browser veneer  │  │   canonical cockpit      │
 └────────┬─────────┘  └─────────┬────────┘  └────────────┬─────────────┘
          │                      │                        │
-┌────────┴────────┐   ┌─────────┴────────┐               │
-│ direct          │   │ ask agent surface│               │
-│  bss-clients    │   │  agent_bridge.*  │               │
-│ (signup, post-  │   │  → astream_once  │               │
-│  login, reads)  │   └─────────┬────────┘               │
+┌────────┴────────┐             │                        │
+│ direct          │             │  shared cockpit.session│
+│  bss-clients    │             │  Conversation store    │
+│ (signup, post-  │             │  (Postgres-backed)     │
+│  login, reads)  │             │                        │
+│                 │             │                        │
 │ chat → astream  │             │                        │
 │ (customer_self_ │             │                        │
-│  serve profile, │             │                        │
-│  v0.12)         │             │                        │
+│  serve profile) │             │                        │
 └────────┬────────┘             │                        │
          │                      ▼                        ▼
          │      ┌──────────────────────────────────────────────────┐
          │      │  bss_orchestrator.session.astream_once(channel,  │
-         │      │   actor=…) · ReAct over 95-tool registry · pin   │
-         │      │   allow_destructive=False                        │
+         │      │   actor=…, service_identity=…) · ReAct agent ·   │
+         │      │   allow_destructive gated by /confirm            │
          │      └──────────────────────────┬───────────────────────┘
          │                                 │
          └────────────────────►────────────┴──────────────────────►
@@ -238,10 +258,10 @@
 │CRM* ││Pay  │ │Cat  │         │COM  ││Subs │
 │8002 ││8003 │ │8001 │         │8004 ││8006 │
 └──┬──┘└──┬──┘ └──┬──┘         └──┬──┘└──┬──┘
-   │      │       │               │      │
+   │      │       │               │      │   ↑
    │      └─ HTTP (e.g. Pay→CRM "customer exists?")
-   │                              │
-   │      ┌───────────────────────┼──────────────────┐
+   │                              │      │
+   │      ┌───────────────────────┼──────┘
    │      │       ┌─────┐ ┌─────┐ ┌─────┐ ┌──────┐
    │      │       │SOM  │ │Med  │ │Rate │ │Prov  │
    │      │       │8005 │ │8007 │ │8008 │ │ Sim  │
@@ -251,22 +271,25 @@
 ═══════════════════════════════════════════════════════════
 ║         RabbitMQ — topic exchange: bss.events            ║
 ║  order.* · service_order.* · service.* · provisioning.*  ║
-║  subscription.* · usage.* · crm.* · payment.*            ║
+║  subscription.* · usage.* · crm.* · payment.* · port_*   ║
 ═══════════════════════════════════════════════════════════
 
-Each service writes directly to its own schema in ONE shared
-Postgres instance. audit.domain_event is written in the same
-transaction as the domain write; RabbitMQ publish happens
-after commit (simplified outbox). Every service exports OTel
-spans to Jaeger (v0.2+).
+In-process tick loop (v0.18): subscription service runs a
+60s renewal-sweep + reminder-email worker in lifespan; FOR
+UPDATE SKIP LOCKED keeps it safe across replicas.
+
+External providers (v0.14 → v0.16):
+  Resend  ─ transactional email (magic link, OTP, renewal)
+  Didit   ─ KYC: hosted UI + signed-webhook corroboration
+  Stripe  ─ Checkout + webhook reconciliation (PCI SAQ A)
 
 ┌────────────────────────────────────────────────┐  ┌──────────────┐
 │        PostgreSQL 16 (single instance)         │  │   Jaeger     │
 │                                                │  │  (v0.2+)     │
 │  crm · catalog · inventory · payment ·         │  │  OTLP/HTTP   │
 │  order_mgmt · service_inventory · provisioning │  │  → traces UI │
-│  subscription · mediation · billing · audit ·  │  └──────────────┘
-│  knowledge                                     │
+│  subscription · mediation · billing · cockpit ·│  └──────────────┘
+│  audit · integrations · portal_auth            │
 └──────────────────────┬─────────────────────────┘
                        │ read-only
                        ▼
@@ -334,45 +357,47 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
         accessibility audit &mdash; the portals are built to make the backend visible, not to win a UX
         award. The platform underneath is the real story: a magic-link login wall (v0.8), a named-token
         perimeter that flows <code>service_identity</code> into every audit row (v0.9), direct-API
-        post-login self-serve with step-up auth on every sensitive write (v0.10), and a chat surface
-        scoped to the logged-in customer with a hard ownership trip-wire (v0.12).
+        post-login self-serve with step-up auth on every sensitive write (v0.10), a chat surface
+        scoped to the logged-in customer with a hard ownership trip-wire (v0.12), and the v0.13
+        operator cockpit (REPL canonical, browser veneer over a shared <code>Conversation</code>
+        store).
       </p>
       <p>
-        Two small server-rendered portals sit next to the CLI: a self-serve customer portal and a CSR
-        workbench. Both are HTMX plus Jinja, no SPA framework, vendored <code>htmx.min.js</code>, which
-        keeps the dependency surface tiny and lets the chat widget stream tool calls into the page over
-        SSE without fighting a client-side router.
+        Two small server-rendered portals sit next to the CLI: a self-serve customer portal on
+        <code>:9001</code> and an operator cockpit on <code>:9002</code>. Both are HTMX plus Jinja,
+        no SPA framework, vendored <code>htmx.min.js</code>, which keeps the dependency surface tiny
+        and lets streamed tool calls land in the page over SSE without fighting a client-side router.
       </p>
       <p>
         Since v0.11, the signup funnel writes directly through <code>bss-clients</code> from the route
         handlers &mdash; one route, one BSS write, no orchestrator hop. Wall time dropped from about 85
-        seconds to under five. The chat widget is the only orchestrator-mediated surface that remains,
-        and v0.12 narrowed its reach (see the next section).
+        seconds to under five. The customer chat widget is the only orchestrator-mediated surface that
+        remains, and v0.12 narrowed its reach with the <code>customer_self_serve</code> tool profile
+        (see the next section).
       </p>
 
+      <h3>Self-serve portal (customer-facing)</h3>
+
       <figure class="portal-figure">
-        <img src="assets/portal_self_serve_signup_v0_12.png" alt="Self-serve signup form: minimal fields — name, phone, payment card — on a clean single page, with the verified-email identity carrying the rest of the customer record." />
-        <figcaption>Self-serve signup &mdash; direct-write since v0.11. Minimal form (name + phone + card) because the verified-email identity already carries the rest.</figcaption>
+        <img src="assets/portal_self_serve_welcome_v0_18.png" alt="Self-serve public landing page at /welcome: brand bar with bss-cli wordmark, tagline, and Sign in / Browse plans CTAs on a dark background." />
+        <figcaption>Public landing &mdash; <code>/welcome</code>. Brand bar plus Sign-in / Browse-plans CTAs.</figcaption>
       </figure>
 
       <figure class="portal-figure">
-        <img src="assets/portal_self_serve_confirmation_v0_12.png" alt="Self-serve confirmation page rendered after activation, showing the new subscription summary, eSIM activation QR code, and LPA code for manual entry." />
-        <figcaption>Confirmation with eSIM activation QR + LPA code.</figcaption>
+        <img src="assets/portal_self_serve_plans_v0_18.png" alt="Self-serve plan picker at /plans: three cards (PLAN_S, PLAN_M, PLAN_L) showing Data, Voice, SMS, and Roaming allowance rows. PLAN_S has no roaming (em dash); PLAN_M ships 500 MB roaming; PLAN_L ships 2 GB." />
+        <figcaption>Plan picker &mdash; <code>/plans</code>. Three plans, four allowance rows aligned (Data / Voice / SMS / Roaming, the last added in v0.17 telco-hygiene release).</figcaption>
+      </figure>
+
+      <h3>Operator cockpit &mdash; browser veneer</h3>
+
+      <figure class="portal-figure">
+        <img src="assets/portal_csr_cockpit_sessions_v0_18.png" alt="Cockpit sessions index at port 9002: greeting 'Hello, operator', a list of recent conversations, customer search, and a +New conversation button." />
+        <figcaption>Sessions index &mdash; <code>localhost:9002/</code>. Recent conversations, customer search, new-conversation CTA. No login wall (single-operator-by-design behind a secure perimeter).</figcaption>
       </figure>
 
       <figure class="portal-figure">
-        <img src="assets/portal_self_serve_chat_widget_v0_12.png" alt="The v0.12 chat widget mid-conversation: a popup pinned to the bottom-right of the dashboard, multi-turn history, markdown-rendered replies, auto-scrolling on new tokens." />
-        <figcaption>v0.12 chat widget mid-conversation &mdash; pops up on every post-login page; multi-turn memory within a session; markdown rendering; auto-scroll on stream.</figcaption>
-      </figure>
-
-      <figure class="portal-figure">
-        <img src="assets/portal_csr_360_v0_5.png" alt="CSR portal customer 360 view: a single page with the customer's profile, subscriptions, bundle balances, recent orders, payments, and open cases." />
-        <figcaption>CSR customer 360 &mdash; read-only, single page.</figcaption>
-      </figure>
-
-      <figure class="portal-figure">
-        <img src="assets/portal_csr_agent_midstream_v0_5.png" alt="CSR portal with the in-page agent answering a free-text question about why the customer's data is not working, tokens streaming mid-reply." />
-        <figcaption>CSR asks the agent mid-stream: "why is their data not working?"</figcaption>
+        <img src="assets/portal_csr_cockpit_session_v0_18.png" alt="Live cockpit conversation: the agent renders ASCII tool cards inline (a VAS Offerings list and a PLAN_L: Max detail card) in monospace, with the operator's prompts in green chat bubbles on the right." />
+        <figcaption>Live conversation &mdash; ASCII tool cards inline (catalog VAS list, plan detail). Destructive actions propose first; operator types <code>/confirm</code> to commit.</figcaption>
       </figure>
     </section>
 
@@ -431,9 +456,8 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
         <code>identity_recovery</code>, <code>bereavement</code>. The system prompt names them with
         examples; when the agent recognises one, it calls <code>case.open_for_me</code>, which writes
         a CRM case linked to a SHA-256 hash of the conversation. The transcript itself lives in
-        <code>audit.chat_transcript</code>, addressed by hash, append-only. A CSR opens
-        <code>/case/{id}</code> in the v0.5 console and reads the conversation in the new "Chat
-        transcript" panel.
+        <code>audit.chat_transcript</code>, addressed by hash, append-only. The operator opens the
+        case in the v0.13 cockpit and reads the conversation in the "Chat transcript" panel.
       </p>
 
       <p>
@@ -455,7 +479,8 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
         synthetic customers through 14 simulated days under a frozen accelerated clock &mdash; chat
         queries, dashboard hits, escalation triggers, and deliberate cross-customer probes. It is an
         internal-beta soak under accelerated time, not real user traffic; the report
-        (<code>soak/report-v0.12.md</code>) is what the v0.12 release tagged on.
+        (<code>soak/report-v0.12.md</code>) is what the v0.12 release tagged on, and a re-run on
+        v1.0 is the public-cohort gate before tagging.
       </p>
       <dl class="numbers">
         <div><dt>Ownership-check trips</dt><dd>0 / target 0</dd></div>
@@ -471,15 +496,13 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
     <section aria-labelledby="numbers-heading">
       <h2 id="numbers-heading">What's shipped</h2>
       <dl class="numbers">
-        <div><dt>Services</dt><dd>9 + 2 portals</dd></div>
-        <div><dt>Typed LLM tools</dt><dd>95</dd></div>
-        <div><dt>Tests passing</dt><dd>~1,129</dd></div>
-        <div><dt>Hero scenarios</dt><dd>12 end-to-end</dd></div>
-        <div><dt>Cold start</dt><dd>25&nbsp;seconds</dd></div>
+        <div><dt>Services</dt><dd>10 + 2 portals</dd></div>
+        <div><dt>Hero scenarios</dt><dd>17 end-to-end (~95s wall)</dd></div>
+        <div><dt>Doctrine grep guards</dt><dd>14 in <code>make doctrine-check</code></dd></div>
+        <div><dt>Real-provider integrations</dt><dd>Resend · Didit · Stripe</dd></div>
+        <div><dt>Cold start</dt><dd>~25&nbsp;seconds</dd></div>
         <div><dt>Runtime RAM</dt><dd>&lt; 4&nbsp;GB</dd></div>
-        <div><dt>Image footprint</dt><dd>~1.1&nbsp;GB BYOI · ~2.65&nbsp;GB bundled</dd></div>
         <div><dt>Agent dev session</dt><dd>~$0.005 (Gemma 4 26B A4B)</dd></div>
-        <div><dt>Architecture decisions</dt><dd>~64 numbered DECISIONS.md entries</dd></div>
       </dl>
     </section>
 
@@ -500,6 +523,8 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
         <span class="tag">LangGraph</span>
         <span class="tag">OpenRouter · Gemma 4 26B A4B</span>
         <span class="tag">bss-portal-auth (v0.8+)</span>
+        <span class="tag">bss-cockpit (v0.13+)</span>
+        <span class="tag">Resend · Didit · Stripe (v0.14–v0.16)</span>
         <span class="tag">PostgreSQL 16</span>
         <span class="tag">RabbitMQ</span>
         <span class="tag">OpenTelemetry</span>
@@ -517,8 +542,36 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
       <h2 id="versions-heading">Versions</h2>
       <ol class="timeline">
         <li>
+          <span class="ver">v0.19</span>
+          <span>Soak baseline before v1.0. UX polish: deterministic intent intercept on list-shaped REPL queries (kills LLM fabrication), Rich/box-drawing ASCII panels rendered as <code>&lt;pre&gt;</code> in the cockpit browser, consolidated docs sweep, README rewrite to 1.0-baseline, KYC-provider rename (<code>myinfo</code> → <code>prebaked</code>), retired stale SHIP_CRITERIA + Phase-12 framing.</span>
+        </li>
+        <li>
+          <span class="ver">v0.18</span>
+          <span>Automated subscription-renewal worker. In-process tick loop in the subscription lifespan: three sweeps per tick (renew due / skip blocked-overdue / send upcoming-renewal email). <code>FOR UPDATE SKIP LOCKED</code> from day one — multi-replica safe by construction.</span>
+        </li>
+        <li>
+          <span class="ver">v0.17</span>
+          <span>Telco hygiene release. MNP (port-in / port-out via <code>crm.port_request</code>), MSISDN replenishment (<code>bss inventory msisdn add-range</code> + low-watermark event), roaming as a product (<code>data_roaming</code> allowance type, <code>VAS_ROAMING_1GB</code> top-up).</span>
+        </li>
+        <li>
+          <span class="ver">v0.16</span>
+          <span>Real Stripe Checkout + webhook reconciliation (PCI scope guard refuses to boot in production-stripe mode if a card-number <code>&lt;input&gt;</code> survives in any rendered template). Idempotency keys, drift detection, refund-record-only.</span>
+        </li>
+        <li>
+          <span class="ver">v0.15</span>
+          <span>Real Didit KYC + the eSIM-provider seam. Channel-layer KYC: hosted UI + signed-webhook corroboration. BSS only verifies signed attestations + corroboration.</span>
+        </li>
+        <li>
+          <span class="ver">v0.14</span>
+          <span>Real-provider integration arc begins. Per-domain adapter Protocols, <code>integrations</code> schema for forensic external-call + webhook-event logging, ResendEmailAdapter for transactional auth mail.</span>
+        </li>
+        <li>
+          <span class="ver">v0.13</span>
+          <span>Operator cockpit. CLI REPL canonical, browser veneer over a shared Postgres-backed <code>Conversation</code> store. v0.5 staff-auth retired in favour of single-operator-by-design behind a secure perimeter; <code>OPERATOR.md</code> as operator-editable persona; <code>/confirm</code> for destructive ops.</span>
+        </li>
+        <li>
           <span class="ver">v0.12</span>
-          <span>Chat scoping + escalation + 14-day soak. <code>customer_self_serve</code> tool profile, output ownership trip-wire, per-customer rate + cost caps, five non-negotiable escalation categories, popup chat widget on every post-login page, pre-signup browse mode. v1.0 is what swaps Singpass + Stripe + SM-DP+.</span>
+          <span>Chat scoping + escalation + 14-day soak. <code>customer_self_serve</code> tool profile, output ownership trip-wire, per-customer rate + cost caps, five non-negotiable escalation categories, popup chat widget on every post-login page, pre-signup browse mode.</span>
         </li>
         <li>
           <span class="ver">v0.11</span>
@@ -574,8 +627,8 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
       <p>
         <a href="https://github.com/samurai-bot/bss-cli">github.com/samurai-bot/bss-cli</a>
         &nbsp;·&nbsp; Apache-2.0
-        &nbsp;·&nbsp; v0.12.0
-        &nbsp;·&nbsp; April 2026
+        &nbsp;·&nbsp; v0.19.0
+        &nbsp;·&nbsp; May 2026
       </p>
       <p class="footer-note">Built with care.</p>
     </footer>
