@@ -428,6 +428,40 @@ figcaption {
 }
 
 /* ── Versions timeline ──────────────────────────────────────── */
+/* v0.20.1 — show the top 5 entries by default, scroll for the rest.
+   The history grew to 20+ entries and dominated the page; capping the
+   visible window keeps the recent releases above the fold while
+   leaving the full chronology one scroll away. The fade at the bottom
+   hints at more content; ``tabindex="0"`` on the wrapper makes the
+   scroll area keyboard-focusable. */
+.timeline-window {
+  position: relative;
+  max-height: 26rem;
+  overflow-y: auto;
+  padding-right: 8px;
+  /* Fade-out mask hints there's more below the visible cut. Falls
+     back to a hard edge in browsers without mask support. */
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 32px), transparent 100%);
+}
+.timeline-window:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+/* Keep the scrollbar subtle but visible. */
+.timeline-window::-webkit-scrollbar { width: 6px; }
+.timeline-window::-webkit-scrollbar-track { background: transparent; }
+.timeline-window::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+.timeline-window::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+.timeline-window {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
 .timeline {
   list-style: none;
   margin: 0;
@@ -443,6 +477,7 @@ figcaption {
   border-top: 1px solid var(--border);
   align-items: baseline;
 }
+.timeline li:first-child { border-top: none; }
 .timeline li:last-child { border-bottom: 1px solid var(--border); }
 .timeline .ver {
   font-family: var(--font-mono);
@@ -452,6 +487,7 @@ figcaption {
 
 @media (max-width: 560px) {
   .timeline li { grid-template-columns: 56px 1fr; gap: 12px; }
+  .timeline-window { max-height: 24rem; }
 }
 
 /* ── Footer ─────────────────────────────────────────────────── */
