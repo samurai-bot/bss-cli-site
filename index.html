@@ -554,10 +554,6 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
       <div class="timeline-window" tabindex="0" aria-label="Version history (scrollable)">
       <ol class="timeline">
         <li>
-          <span class="ver">v0.20.1</span>
-          <span>Cockpit prose-rendering + UX polish. Markdown-aware final-message rendering on both surfaces (REPL via Rich, browser via opt-in pipe-table HTML when <code>knowledge.*</code> fires); shared <code>bss_cockpit.postprocess</code> strips Harmony channel-format leakage (<code>&lt;channel|&gt;</code>, <code>assistantfinal</code>); empty-bubble synthesis when gemma's terminal AIMessage is empty post-<code>knowledge.search</code>; pre-existing <code>ContextVar.reset</code> across-task crash in the SSE finally block guarded; cockpit canvas widened to 1280px and bubble typography tightened.</span>
-        </li>
-        <li>
           <span class="ver">v0.20</span>
           <span>Cockpit knowledge tool (handbook RAG). <code>knowledge.search</code> / <code>knowledge.get</code> over an indexed doc corpus (HANDBOOK + CLAUDE + runbooks); citation guard catches un-cited handbook claims; Tier-0 Postgres FTS default, Tier-1 pgvector hybrid behind a backend toggle. New <code>knowledge</code> schema, <code>--data-roaming-mb</code> flag closes the v0.17 catalog admin gap. Postgres image moves to <code>pgvector/pgvector:pg16</code>. New single-file <code>docs/HANDBOOK.md</code> consolidates setup, env vars, providers, personas, and every runbook into one Obsidian-friendly reference (the same corpus the cockpit indexes).</span>
         </li>
