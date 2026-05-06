@@ -42,7 +42,7 @@
           <span class="prompt-sigil" aria-hidden="true">$</span>
           bss-cli<span class="cursor" aria-hidden="true"></span>
         </h1>
-        <span class="version-pill" aria-label="current version">v0.20.1</span>
+        <span class="version-pill" aria-label="current version">v1.0.0</span>
       </div>
       <p class="tagline">The entire BSS, in a terminal. SID-aligned. TMF-compliant. LLM-native. eSIM-first.</p>
       <p class="repo-url">
@@ -74,13 +74,13 @@
         CDR, and OCS protocols are intentionally out of scope (channel-layer concerns).
       </p>
       <p>
-        v0.20 is the soak baseline before v1.0. All three real-provider integrations are live (Resend email,
+        v1.0 is the GA wrap of the v0.x arc. All three real-provider integrations are live (Resend email,
         Didit KYC, Stripe Checkout). Telco hygiene gaps are closed (MNP port-in/port-out, MSISDN replenishment,
         roaming as a product). Renewals fire automatically on their period boundary via an in-process worker;
-        customers get a reminder email ~24h before. v0.20 adds an indexed-corpus knowledge tool so the cockpit
-        can answer how-to questions from the operator handbook + runbooks + doctrine with cited anchors
-        (Postgres FTS by default, optional pgvector hybrid). The only mocked surface left for v1.0 is
-        SM-DP+ (real eSIM provisioning is NDA-gated).
+        customers get a reminder email ~24h before. The cockpit knowledge tool (v0.20) lets it answer how-to
+        questions from the operator handbook + runbooks + doctrine with cited anchors (Postgres FTS by
+        default, optional pgvector hybrid). The only mocked surface left for production is SM-DP+
+        (real eSIM provisioning is NDA-gated).
       </p>
 
       <p>BSS-CLI exists as three things at once:</p>
@@ -99,7 +99,7 @@
       <h2 id="repl-heading">The operator cockpit (REPL canonical)</h2>
 
       <figure class="feature-figure">
-        <img src="assets/bss_repl_v0_19.jpg" alt="The BSS-CLI REPL: a conversational prompt driving typed tools, with results rendered as boxed ASCII cards inline. Plan listing, VAS catalogue, and a PLAN_L detail card all visible above the prompt." />
+        <img src="assets/bss_repl_v1.jpg" alt="The BSS-CLI REPL: a conversational prompt driving typed tools, with results rendered as boxed ASCII cards inline. Plan listing, VAS catalogue, and a PLAN_L detail card all visible above the prompt." />
         <figcaption>
           The <code>bss</code> REPL is the cockpit. Type natural language; the agent calls tools; results render as ASCII cards. Slash commands (<code>/ports</code>, <code>/360</code>, <code>/focus</code>, <code>/confirm</code>) cover deterministic operator flows. v0.20 adds <code>knowledge.search</code> / <code>knowledge.get</code> so the cockpit can answer how-to questions from the indexed handbook + runbooks with cited anchors.
         </figcaption>
@@ -388,24 +388,24 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
       <h3>Self-serve portal (customer-facing)</h3>
 
       <figure class="portal-figure">
-        <img src="assets/portal_self_serve_welcome_v0_18.png" alt="Self-serve public landing page at /welcome: brand bar with bss-cli wordmark, tagline, and Sign in / Browse plans CTAs on a dark background." />
+        <img src="assets/portal_self_serve_welcome_v1.jpg" alt="Self-serve public landing page at /welcome: brand bar with bss-cli wordmark, tagline, and Sign in / Browse plans CTAs on a dark background." />
         <figcaption>Public landing &mdash; <code>/welcome</code>. Brand bar plus Sign-in / Browse-plans CTAs.</figcaption>
       </figure>
 
       <figure class="portal-figure">
-        <img src="assets/portal_self_serve_plans_v0_18.png" alt="Self-serve plan picker at /plans: three cards (PLAN_S, PLAN_M, PLAN_L) showing Data, Voice, SMS, and Roaming allowance rows. PLAN_S has no roaming (em dash); PLAN_M ships 500 MB roaming; PLAN_L ships 2 GB." />
+        <img src="assets/portal_self_serve_plans_v1.jpg" alt="Self-serve plan picker at /plans: three cards (PLAN_S, PLAN_M, PLAN_L) showing Data, Voice, SMS, and Roaming allowance rows. PLAN_S has no roaming (em dash); PLAN_M ships 500 MB roaming; PLAN_L ships 2 GB." />
         <figcaption>Plan picker &mdash; <code>/plans</code>. Three plans, four allowance rows aligned (Data / Voice / SMS / Roaming, the last added in v0.17 telco-hygiene release).</figcaption>
       </figure>
 
       <h3>Operator cockpit &mdash; browser veneer</h3>
 
       <figure class="portal-figure">
-        <img src="assets/portal_csr_cockpit_sessions_v0_18.png" alt="Cockpit sessions index at port 9002: greeting 'Hello, operator', a list of recent conversations, customer search, and a +New conversation button." />
+        <img src="assets/portal_csr_cockpit_sessions_v1.jpg" alt="Cockpit sessions index at port 9002: greeting 'Hello, operator', a list of recent conversations, customer search, and a +New conversation button." />
         <figcaption>Sessions index &mdash; <code>localhost:9002/</code>. Recent conversations, customer search, new-conversation CTA. No login wall (single-operator-by-design behind a secure perimeter).</figcaption>
       </figure>
 
       <figure class="portal-figure">
-        <img src="assets/portal_csr_cockpit_session_v0_18.png" alt="Live cockpit conversation: the agent renders ASCII tool cards inline (a VAS Offerings list and a PLAN_L: Max detail card) in monospace, with the operator's prompts in green chat bubbles on the right." />
+        <img src="assets/portal_csr_cockpit_session_v1.jpg" alt="Live cockpit conversation: the agent renders ASCII tool cards inline (a VAS Offerings list and a PLAN_L: Max detail card) in monospace, with the operator's prompts in green chat bubbles on the right." />
         <figcaption>Live conversation &mdash; ASCII tool cards inline (catalog VAS list, plan detail). Destructive actions propose first; operator types <code>/confirm</code> to commit.</figcaption>
       </figure>
     </section>
@@ -489,7 +489,7 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
         queries, dashboard hits, escalation triggers, and deliberate cross-customer probes. It is an
         internal-beta soak under accelerated time, not real user traffic; the report
         (<code>soak/report-v0.12.md</code>) is what the v0.12 release tagged on, and a re-run on
-        v1.0 is the public-cohort gate before tagging.
+        v1.0 was the gate that anchored the GA tag.
       </p>
       <dl class="numbers">
         <div><dt>Ownership-check trips</dt><dd>0 / target 0</dd></div>
@@ -509,7 +509,7 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
         <div><dt>Hero scenarios</dt><dd>19 end-to-end (~100s wall)</dd></div>
         <div><dt>Doctrine grep guards</dt><dd>16 in <code>make doctrine-check</code></dd></div>
         <div><dt>Real-provider integrations</dt><dd>Resend · Didit · Stripe</dd></div>
-        <div><dt>Cold start</dt><dd>~22&nbsp;seconds (v0.20, BYOI)</dd></div>
+        <div><dt>Cold start</dt><dd>~22&nbsp;seconds (v1.0, BYOI)</dd></div>
         <div><dt>Runtime RAM</dt><dd>~1.2&nbsp;GiB across 11 containers (excl. Postgres / RabbitMQ / Jaeger / LLM)</dd></div>
         <div><dt>Doc corpus indexed</dt><dd>~370 chunks across 25 files (handbook + runbooks + doctrine)</dd></div>
         <div><dt>Agent dev session</dt><dd>~$0.005 (Gemma 4 26B A4B)</dd></div>
@@ -553,6 +553,10 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
       <h2 id="versions-heading">Versions</h2>
       <div class="timeline-window" tabindex="0" aria-label="Version history (scrollable)">
       <ol class="timeline">
+        <li>
+          <span class="ver">v1.0</span>
+          <span>General Availability &mdash; the wrap of the v0.x arc. All seven principles intact under load: bundled-prepaid, card-on-file, block-on-exhaust, CLI-first / LLM-native, TMF-compliant, lightweight (~2.65&nbsp;GiB all-in including Postgres / RabbitMQ / Metabase / Jaeger; p99 internal API under 50&nbsp;ms), write-through policy. Real-provider integrations live (Resend, Didit, Stripe Checkout); SM-DP+ remains NDA-gated mock. Cockpit knowledge tool answers operator how-to questions from the indexed handbook with cited anchors. Single-Postgres / schema-per-domain holds; the documented split path is ready when traffic demands it.</span>
+        </li>
         <li>
           <span class="ver">v0.20</span>
           <span>Cockpit knowledge tool (handbook RAG). <code>knowledge.search</code> / <code>knowledge.get</code> over an indexed doc corpus (HANDBOOK + CLAUDE + runbooks); citation guard catches un-cited handbook claims; Tier-0 Postgres FTS default, Tier-1 pgvector hybrid behind a backend toggle. New <code>knowledge</code> schema, <code>--data-roaming-mb</code> flag closes the v0.17 catalog admin gap. Postgres image moves to <code>pgvector/pgvector:pg16</code>. New single-file <code>docs/HANDBOOK.md</code> consolidates setup, env vars, providers, personas, and every runbook into one Obsidian-friendly reference (the same corpus the cockpit indexes).</span>
@@ -644,7 +648,7 @@ POST /tmf-api/productOrderingManagement/v4/productOrder              [com       
       <p>
         <a href="https://github.com/samurai-bot/bss-cli">github.com/samurai-bot/bss-cli</a>
         &nbsp;·&nbsp; Apache-2.0
-        &nbsp;·&nbsp; v0.20.1
+        &nbsp;·&nbsp; v1.0.0
         &nbsp;·&nbsp; May 2026
       </p>
       <p class="footer-note">Built with care.</p>
